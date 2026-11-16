@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" style="background:#F8FAFC;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  
+    <pattern id="wfGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E2E8F0" stroke-width="0.8" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#wfGrid)" opacity="0.6" />
+  <!-- Wireframe Frame: MOB-06: Add Food & AI Scan [BLUEPRINT] -->
+
+  
+    <rect x="0" y="0" width="390" height="844" rx="44" fill="#0F172A" stroke="#94A3B8" stroke-width="3" />
+    <rect x="135" y="10" width="120" height="30" rx="15" fill="#000" />
+    <text x="35" y="30" fill="#0F172A" font-size="14" font-weight="600">9:41</text>
+    <rect x="0" y="44" width="390" height="52" fill="#0F172A" stroke="#CBD5E1" stroke-width="1" />
+    <text x="20" y="76" fill="#0F172A" font-size="17" font-weight="700">Nhập Thực Phẩm</text>
+    <rect x="270" y="58" width="100" height="24" rx="12" fill="#1E293B" />
+    <circle cx="282" cy="70" r="3.5" fill="#059669" />
+    <text x="292" y="74" fill="#059669" font-size="10" font-weight="700">SERVER OK</text>
+    <g transform="translate(0, 770)">
+      <rect x="0" y="0" width="390" height="74" fill="#0F172A" stroke="#CBD5E1" stroke-width="1" />
+      <line x1="0" y1="0" x2="390" y2="0" stroke="#CBD5E1" stroke-width="1" />
+      
+      <g transform="translate(0, 0)">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#64748B" font-size="10" font-weight="400">Trang chủ</text>
+      </g>
+    
+      <g transform="translate(78, 0)">
+        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#1E293B" font-size="10" font-weight="700">Tủ lạnh</text>
+      </g>
+    
+      <g transform="translate(156, 0)">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#64748B" font-size="10" font-weight="400">Món ăn</text>
+      </g>
+    
+      <g transform="translate(234, 0)">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#64748B" font-size="10" font-weight="400">Cảnh báo</text>
+      </g>
+    
+      <g transform="translate(312, 0)">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#64748B" font-size="10" font-weight="400">Cài đặt</text>
+      </g>
+    
+      <rect x="125" y="62" width="140" height="4" rx="2" fill="#64748B" />
+    </g>
+  
+  <g transform="translate(16, 105)">
+    <rect x="0" y="0" width="358" height="65" rx="10" fill="#F1F5F9" />
+    <text x="18" y="28" fill="#0F172A" font-size="14" font-weight="700">📷 Quét Thông Minh AI (Hóa đơn / Nhãn)</text>
+    <text x="18" y="48" fill="#CCFBF1" font-size="11">Tự động điền hạn dùng và gợi ý tên thực phẩm</text>
+
+    <g transform="translate(0, 80)">
+      <text x="0" y="16" fill="#64748B" font-size="11">TÊN THỰC PHẨM (*)</text>
+      <rect x="0" y="24" width="358" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
+      <text x="14" y="50" fill="#0F172A" font-size="14">Cá lóc đồng làm sạch</text>
+
+      <text x="0" y="90" fill="#64748B" font-size="11">NHÓM DANH MỤC</text>
+      <rect x="0" y="98" width="358" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
+      <text x="14" y="124" fill="#1E293B" font-size="14">Thịt &amp; Thủy hải sản</text>
+
+      <g transform="translate(0, 164)">
+        <text x="0" y="0" fill="#64748B" font-size="11">SỐ LƯỢNG (*)</text>
+        <rect x="0" y="8" width="170" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
+        <text x="14" y="34" fill="#0F172A" font-size="14">600</text>
+
+        <text x="188" y="0" fill="#64748B" font-size="11">ĐƠN VỊ TÍNH (*)</text>
+        <rect x="188" y="8" width="170" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
+        <text x="202" y="34" fill="#0F172A" font-size="14">g (Gram)</text>
+      </g>
+
+      <text x="0" y="238" fill="#64748B" font-size="11">NGÀY HẾT HẠN (*)</text>
+      <rect x="0" y="246" width="358" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
+      <text x="14" y="272" fill="#0284C7" font-size="14" font-weight="700">19/11/2026 (Còn 4 ngày)</text>
+
+      <text x="0" y="312" fill="#64748B" font-size="11">VỊ TRÍ LƯU TRỮ (*)</text>
+      <rect x="0" y="320" width="358" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
+      <text x="14" y="346" fill="#1E293B" font-size="14">Tủ lạnh &gt; Ngăn đông đá</text>
+
+      <g cursor="pointer" transform="translate(0, 390)">
+        <rect x="0" y="0" width="358" height="50" rx="10" fill="#1E293B" filter="url(#shadow)" />
+        <text x="179" y="31" text-anchor="middle" fill="#0F172A" font-size="15" font-weight="700">LƯU VÀO KHO (ĐỒNG BỘ SERVER)</text>
+      </g>
+    </g>
+  </g>
+  </svg>

@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900" style="background:#F8FAFC;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  
+    <pattern id="wfGrid" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#E2E8F0" stroke-width="0.8" />
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#wfGrid)" opacity="0.6" />
+  <!-- Wireframe Frame: DSK-MODALS: Suite DSK-M01..M06 [BLUEPRINT] -->
+
+  <rect x="0" y="0" width="1440" height="900" fill="#0F172A" />
+  
+  <rect x="40" y="40" width="1360" height="820" rx="16" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="2" />
+  <text x="70" y="80" fill="#0F172A" font-size="24" font-weight="700">Bộ Hộp Thoại Desktop Server (Modals Suite: DSK-M01 .. DSK-M06)</text>
+  <text x="70" y="106" fill="#64748B" font-size="14">Đặc tả form 12 trường IN01-IN12, phiếu trừ kho, công thức và khay hệ thống</text>
+
+  <!-- Modal 1: Form Thêm Thực Phẩm DSK-M01 -->
+  <g id="Modal_DSK-M01" transform="translate(70, 130)">
+    <rect x="0" y="0" width="400" height="340" rx="12" fill="#0F172A" stroke="#0F766E" stroke-width="2" filter="url(#shadow)" />
+    <text x="20" y="32" fill="#0F172A" font-size="15" font-weight="700">DSK-M01: Thêm Lô Thực Phẩm Mới</text>
+    <line x1="0" y1="46" x2="400" y2="46" stroke="#94A3B8" />
+    
+    <text x="20" y="70" fill="#64748B" font-size="11">TÊN THỰC PHẨM (*)</text>
+    <rect x="20" y="78" width="360" height="30" rx="4" fill="#F1F5F9" stroke="#94A3B8" /><text x="30" y="98" fill="#0F172A" font-size="12">Thịt heo ba chỉ</text>
+
+    <text x="20" y="125" fill="#64748B" font-size="11">SỐ LƯỢNG &amp; ĐƠN VỊ (*)</text>
+    <rect x="20" y="133" width="170" height="30" rx="4" fill="#F1F5F9" stroke="#94A3B8" /><text x="30" y="153" fill="#0F172A" font-size="12">800</text>
+    <rect x="200" y="133" width="180" height="30" rx="4" fill="#F1F5F9" stroke="#94A3B8" /><text x="210" y="153" fill="#0F172A" font-size="12">g (Gram)</text>
+
+    <text x="20" y="180" fill="#64748B" font-size="11">NGÀY HẾT HẠN (*)</text>
+    <rect x="20" y="188" width="360" height="30" rx="4" fill="#F1F5F9" stroke="#94A3B8" /><text x="30" y="208" fill="#0F172A" font-size="12">20/11/2026</text>
+
+    <text x="20" y="235" fill="#64748B" font-size="11">VỊ TRÍ LƯU TRỮ (*)</text>
+    <rect x="20" y="243" width="360" height="30" rx="4" fill="#F1F5F9" stroke="#94A3B8" /><text x="30" y="263" fill="#0F172A" font-size="12">Tủ lạnh &gt; Ngăn mát</text>
+
+    <rect x="20" y="290" width="170" height="36" rx="6" fill="#334155" /><text x="80" y="312" fill="#334155" font-size="12">Hủy</text>
+    <rect x="210" y="290" width="170" height="36" rx="6" fill="#1E293B" /><text x="260" y="312" fill="#0F172A" font-size="12" font-weight="700">Lưu kho</text>
+  </g>
+
+  <!-- Modal 2: Xuất / Dùng kho DSK-M02 -->
+  <g id="Modal_DSK-M02" transform="translate(500, 130)">
+    <rect x="0" y="0" width="400" height="340" rx="12" fill="#0F172A" stroke="#D97706" stroke-width="2" filter="url(#shadow)" />
+    <text x="20" y="32" fill="#0F172A" font-size="15" font-weight="700">DSK-M02: Phiếu Xuất / Dùng Kho</text>
+    <line x1="0" y1="46" x2="400" y2="46" stroke="#94A3B8" />
+    
+    <rect x="20" y="60" width="115" height="28" rx="4" fill="#1E293B" /><text x="45" y="78" fill="#0F172A" font-size="11">Sử dụng</text>
+    <rect x="142" y="60" width="115" height="28" rx="4" fill="#F1F5F9" /><text x="165" y="78" fill="#64748B" font-size="11">Điều chỉnh</text>
+    <rect x="265" y="60" width="115" height="28" rx="4" fill="#F1F5F9" /><text x="295" y="78" fill="#64748B" font-size="11">Hủy bỏ</text>
+
+    <text x="20" y="115" fill="#64748B" font-size="11">SỐ LƯỢNG DÙNG (TỒN HIỆN CÓ: 500g)</text>
+    <rect x="20" y="125" width="360" height="34" rx="4" fill="#F1F5F9" stroke="#94A3B8" /><text x="30" y="147" fill="#B45309" font-size="14" font-weight="700">200 g</text>
+
+    <text x="20" y="180" fill="#64748B" font-size="11">MỤC ĐÍCH / LÝ DO GHI CHÚ</text>
+    <rect x="20" y="190" width="360" height="60" rx="4" fill="#F1F5F9" stroke="#94A3B8" /><text x="30" y="215" fill="#0F172A" font-size="12">Nấu món Bò xào rau cải thìa</text>
+
+    <rect x="20" y="290" width="170" height="36" rx="6" fill="#334155" /><text x="80" y="312" fill="#334155" font-size="12">Đóng</text>
+    <rect x="210" y="290" width="170" height="36" rx="6" fill="#1E293B" /><text x="250" y="312" fill="#0F172A" font-size="12" font-weight="700">Xác nhận trừ kho</text>
+  </g>
+
+  <!-- Modal 3: System Tray Popover DSK-M06 -->
+  <g id="Modal_DSK-M06" transform="translate(930, 130)">
+    <rect x="0" y="0" width="380" height="340" rx="12" fill="#0F172A" stroke="#0284C7" stroke-width="2" filter="url(#shadow)" />
+    <text x="20" y="32" fill="#0284C7" font-size="15" font-weight="700">DSK-M06: System Tray Popover</text>
+    <text x="20" y="50" fill="#64748B" font-size="11">Chạy ngầm khay hệ thống Windows Taskbar</text>
+    <line x1="0" y1="60" x2="380" y2="60" stroke="#94A3B8" />
+
+    <g transform="translate(20, 75)">
+      <circle cx="10" cy="12" r="5" fill="#1E293B" />
+      <text x="26" y="16" fill="#0F172A" font-size="13" font-weight="600">Trạng thái: Máy chủ Đang Lắng Nghe</text>
+      <text x="26" y="34" fill="#64748B" font-size="11">Cổng: 5173 • Ghép đôi: 123456</text>
+    </g>
+
+    <rect x="20" y="130" width="340" height="40" rx="6" fill="#0F172A" /><text x="36" y="155" fill="#1E293B" font-size="13">📂 Mở Cửa Sổ Chính Server</text>
+    <rect x="20" y="180" width="340" height="40" rx="6" fill="#0F172A" /><text x="36" y="205" fill="#1E293B" font-size="13">🔔 Xem 3 Cảnh Báo Hết Hạn Gấp</text>
+    <rect x="20" y="230" width="340" height="40" rx="6" fill="#0F172A" /><text x="36" y="255" fill="#1E293B" font-size="13">📱 Danh Sách Client Đang Ghép Nối (2)</text>
+    <rect x="20" y="280" width="340" height="40" rx="6" fill="#FEE2E2" /><text x="36" y="305" fill="#DC2626" font-size="13">✕ Dừng Dịch Vụ &amp; Thoát Hoàn Toàn</text>
+  </g>
+  </svg>
