@@ -27,10 +27,6 @@ from server.database import (
 )
 
 
-# -----------------------------------------------------------------------------
-# 1. QUẢN LÝ NGÀY GIẢ LẬP HỆ THỐNG & CẤU HÌNH NGƯỠNG (SYSTEM CONFIG)
-# -----------------------------------------------------------------------------
-
 def get_system_config() -> Dict[str, Any]:
     """
     Đọc cấu hình hệ thống từ bảng system_settings:
@@ -84,10 +80,6 @@ def set_system_date(new_date_str: str) -> Dict[str, Any]:
         "message": f"Đã cập nhật ngày hệ thống sang: {formatted_date}"
     }
 
-
-# -----------------------------------------------------------------------------
-# 2. HÀM TÍNH NGÀY CÒN LẠI & PHÂN LOẠI MỨC ĐỘ ƯU TIÊN FEFO
-# -----------------------------------------------------------------------------
 
 def calculate_days_left(expiry_date: str, system_date: Optional[str] = None) -> int:
     """
@@ -172,9 +164,6 @@ def build_suggested_action(priority: str) -> str:
         return "Bảo quản tiếp tục"
 
 
-# -----------------------------------------------------------------------------
-# 3. THUẬT TOÁN ĐỀ XUẤT TIÊU DÙNG FEFO KẾT HỢP TIE-BREAKER FIFO
-# -----------------------------------------------------------------------------
 
 def get_fefo_recommendations(
     include_expired: bool = False,
@@ -376,9 +365,6 @@ def get_fefo_recommendations(
     }
 
 
-# -----------------------------------------------------------------------------
-# 4. GỢI Ý MÓN ĂN & KHỚP NGUYÊN LIỆU CẬN HẠN (RECIPE MATCH ENGINE)
-# -----------------------------------------------------------------------------
 
 def get_all_recipes() -> List[Dict[str, Any]]:
     """Lấy danh sách công thức nấu ăn gia đình từ CSDL."""
@@ -524,10 +510,6 @@ def suggest_recipes(
     results.sort(key=lambda x: (x['matched_high_priority_count'], x['matched_fefo_count'], x['match_score']), reverse=True)
     return results
 
-
-# -----------------------------------------------------------------------------
-# 5. NGHIỆP VỤ XUẤT DÙNG, ĐIỀU CHỈNH & QUẢN LÝ KHO (AUDIT TRAIL)
-# -----------------------------------------------------------------------------
 
 def use_food(
     item_id: int,
@@ -783,10 +765,6 @@ def delete_food_item(
     }
 
 
-# -----------------------------------------------------------------------------
-# 6. HỆ THỐNG CẢNH BÁO KÉP (ALERTS)
-# -----------------------------------------------------------------------------
-
 def get_alerts(system_date: Optional[str] = None) -> Dict[str, Any]:
     """
     Cảnh báo chuẩn hóa theo view_alerts của giao diện dự kiến:
@@ -851,10 +829,6 @@ def get_alerts(system_date: Optional[str] = None) -> Dict[str, Any]:
         "low_stock_items": low_stock
     }
 
-
-# -----------------------------------------------------------------------------
-# 7. TRUY VẤN TỦ LẠNH (INVENTORY) & AUDIT LOG
-# -----------------------------------------------------------------------------
 
 def get_inventory(
     search_text: Optional[str] = None,
