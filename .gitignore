@@ -10,8 +10,16 @@ coverage/
 playwright-report/
 test-results/
 
+# Python & SQLite Runtime
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.sqlite
+*.sqlite3
+
 # Documents & course reports
 docs/
 giaodiendukien/docs/
 *.docx
-*.sql
+!giaodiendukien/database/*.sql
