@@ -20,7 +20,8 @@ Dự án cung cấp giải pháp toàn diện cho hộ gia đình quản lý kho
 Quan_ly_Thuc_Pham/
 ├── README.md                              # Hướng dẫn tổng quan dự án
 ├── .gitignore                             # Cấu hình bỏ qua file rác, build & node_modules
-├── Documents/                             # Thư mục tài liệu dự án (Documents)
+├── Documents/                             # Thư mục tài liệu dự án & thiết kế Figma
+│   └── figma/                             # Bản vẽ Figma (.fig), Wireframes & Canvas Viewer HTML
 └── giaodiendukien/                        # Toàn bộ mã nguồn & tài liệu đặc tả
     ├── 0_CAI_DAT_LAN_DAU (RUN_FIRST).bat  # Cài đặt tự động dependencies lần đầu khi mới clone
     ├── 1_MO_GIAO_DIEN_DESKTOP_SERVER.bat  # 1-Click mở Desktop Server
@@ -77,7 +78,7 @@ npm test
 ---
 
 ## 📋 Tài Liệu & Thiết Kế
-- **Thư mục Documents**: [`Documents/`](./Documents/) (Thư mục tài liệu)
+- **Thiết kế Figma & Phác thảo Wireframe**: Lưu tại thư mục [`Documents/figma/`](./Documents/figma/) (Gồm file gốc `.fig`, bộ vector SVG 34 màn hình và trình duyệt [`figma_canvas_viewer.html`](./Documents/figma/figma_canvas_viewer.html))
 - **Hồ sơ kỹ thuật UI Prototype**: Lưu tại [`giaodiendukien/docs/`](./giaodiendukien/docs/)
 - **Đặc tả chi tiết 27 màn hình và các luồng nghiệp vụ**: [`giaodiendukien/Thiet_ke_cau_truc_giao_dien_du_kien.md`](./giaodiendukien/Thiet_ke_cau_truc_giao_dien_du_kien.md)
 - **Kế hoạch phân rã chức năng Spec Kit**: [`giaodiendukien/specs/001-ui-prototype/`](./giaodiendukien/specs/001-ui-prototype/)
