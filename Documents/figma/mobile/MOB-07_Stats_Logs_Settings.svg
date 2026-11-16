@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" style="background:#0F172A;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Frame: MOB-07: Stats & Settings -->
+
+  
+    <rect x="0" y="0" width="390" height="844" rx="44" fill="#090D16" stroke="#1E293B" stroke-width="4" />
+    <rect x="135" y="10" width="120" height="30" rx="15" fill="#000" />
+    <text x="35" y="30" fill="#FFF" font-size="14" font-weight="600">9:41</text>
+    <rect x="0" y="44" width="390" height="52" fill="#0F172A" />
+    <text x="20" y="76" fill="#FFF" font-size="17" font-weight="700">Cài Đặt &amp; Thống Kê</text>
+    <rect x="270" y="58" width="100" height="24" rx="12" fill="#064E3B" />
+    <circle cx="282" cy="70" r="3.5" fill="#34D399" />
+    <text x="292" y="74" fill="#6EE7B7" font-size="10" font-weight="700">SERVER OK</text>
+    <g transform="translate(0, 770)">
+      <rect x="0" y="0" width="390" height="74" fill="#0F172A" />
+      <line x1="0" y1="0" x2="390" y2="0" stroke="#1E293B" stroke-width="1" />
+      
+      <g transform="translate(0, 0)">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Trang chủ</text>
+      </g>
+    
+      <g transform="translate(78, 0)">
+        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Tủ lạnh</text>
+      </g>
+    
+      <g transform="translate(156, 0)">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Món ăn</text>
+      </g>
+    
+      <g transform="translate(234, 0)">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Cảnh báo</text>
+      </g>
+    
+      <g transform="translate(312, 0)">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#0F766E" font-size="10" font-weight="700">Cài đặt</text>
+      </g>
+    
+      <rect x="125" y="62" width="140" height="4" rx="2" fill="#64748B" />
+    </g>
+  
+  <g transform="translate(16, 110)">
+    <rect x="0" y="0" width="358" height="95" rx="10" fill="#1E293B" stroke="#0F766E" />
+    <circle cx="24" cy="28" r="6" fill="#10B981" />
+    <text x="38" y="32" fill="#FFF" font-size="14" font-weight="700">Đã Kết Nối Desktop Server</text>
+    <text x="18" y="56" fill="#94A3B8" font-size="12">Địa chỉ: 192.168.1.100 • Ghép đôi: 123456</text>
+    <text x="18" y="78" fill="#38BDF8" font-size="11">Chế độ đồng bộ: Tự động qua BroadcastChannel RPC</text>
+
+    <g transform="translate(0, 110)">
+      <rect x="0" y="0" width="358" height="130" rx="10" fill="#1E293B" stroke="#334155" />
+      <text x="18" y="28" fill="#FFF" font-size="14" font-weight="700">Thống Kê Tuần Này</text>
+      
+      <g transform="translate(18, 45)">
+        <text x="0" y="20" fill="#94A3B8" font-size="12">Đã sử dụng:</text><text x="322" y="20" text-anchor="end" fill="#10B981" font-size="13" font-weight="700">8 mặt hàng (4.2 kg)</text>
+        <text x="0" y="48" fill="#94A3B8" font-size="12">Lãng phí / Vứt hủy:</text><text x="322" y="48" text-anchor="end" fill="#38BDF8" font-size="13" font-weight="700">0 mặt hàng (0%)</text>
+        <text x="0" y="74" fill="#94A3B8" font-size="12">Tiết kiệm nhờ FEFO:</text><text x="322" y="74" text-anchor="end" fill="#F59E0B" font-size="13" font-weight="700">~ 285.000 đ</text>
+      </g>
+    </g>
+
+    <g transform="translate(0, 255)">
+      <rect x="0" y="0" width="358" height="50" rx="8" fill="#1E293B" /><text x="18" y="31" fill="#E2E8F0" font-size="13">📂 Xem Nhật Ký Giao Dịch Gần Đây</text><text x="335" y="31" fill="#94A3B8" font-size="14">➔</text>
+      <rect x="0" y="60" width="358" height="50" rx="8" fill="#1E293B" /><text x="18" y="91" fill="#E2E8F0" font-size="13">🔔 Cài Đặt Thông Báo Hạn Dùng</text><text x="335" y="91" fill="#94A3B8" font-size="14">➔</text>
+      <rect x="0" y="120" width="358" height="50" rx="8" fill="#1E293B" /><text x="18" y="151" fill="#E2E8F0" font-size="13">📶 Chế Độ Ngoại Tuyến (Offline Read-Only)</text><text x="315" y="151" fill="#10B981" font-size="12">BẬT</text>
+      <rect x="0" y="180" width="358" height="50" rx="8" fill="#7F1D1D" opacity="0.3" stroke="#EF4444" /><text x="18" y="211" fill="#FCA5A5" font-size="13">✕ Ngắt Kết Nối Với Server</text>
+    </g>
+  </g>
+  </svg>

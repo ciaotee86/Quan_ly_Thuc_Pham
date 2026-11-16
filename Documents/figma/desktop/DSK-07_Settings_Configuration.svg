@@ -1,0 +1,164 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900" style="background:#0F172A;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Frame: DSK-07: Settings -->
+
+  
+    <!-- Top OS Window Bar -->
+    <rect x="0" y="0" width="1440" height="44" fill="#090D16" />
+    <circle cx="24" cy="22" r="6" fill="#EF4444" />
+    <circle cx="42" cy="22" r="6" fill="#F59E0B" />
+    <circle cx="60" cy="22" r="6" fill="#10B981" />
+    <text x="84" y="27" fill="#64748B" font-size="13" font-weight="500">QUẢN LÝ THỰC PHẨM GIA ĐÌNH &amp; ĐỀ XUẤT FEFO — SERVER WORKBENCH (Desktop App)</text>
+    <rect x="1260" y="10" width="160" height="24" rx="12" fill="#1E293B" />
+    <circle cx="1275" cy="22" r="4" fill="#10B981" />
+    <text x="1288" y="26" fill="#10B981" font-size="12" font-weight="600">Port 5173 • Online</text>
+
+    <!-- Top App Navigation Bar -->
+    <rect x="0" y="44" width="1440" height="52" fill="#0F172A" />
+    <line x1="0" y1="96" x2="1440" y2="96" stroke="#1E293B" stroke-width="1" />
+    <rect x="24" y="56" width="30" height="28" rx="6" fill="url(#primaryGrad)" />
+    <text x="32" y="76" fill="#FFF" font-size="16" font-weight="700">QP</text>
+    <text x="64" y="75" fill="#F8FAFC" font-size="17" font-weight="700">FoodManagement<tspan fill="#14B8A6">Server</tspan></text>
+    
+    <!-- Time Simulator Controls in Header -->
+    <g id="Time_Simulator_Bar" transform="translate(680, 54)">
+      <rect x="0" y="0" width="460" height="34" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <text x="14" y="22" fill="#94A3B8" font-size="12">Thời gian giả lập:</text>
+      <text x="120" y="22" fill="#38BDF8" font-size="13" font-weight="700">15/11/2026</text>
+      <rect x="210" y="4" width="45" height="26" rx="4" fill="#334155" />
+      <text x="222" y="21" fill="#FFF" font-size="12">-1d</text>
+      <rect x="262" y="4" width="45" height="26" rx="4" fill="#0F766E" />
+      <text x="273" y="21" fill="#FFF" font-size="12">+1d</text>
+      <rect x="314" y="4" width="45" height="26" rx="4" fill="#0F766E" />
+      <text x="325" y="21" fill="#FFF" font-size="12">+3d</text>
+      <rect x="366" y="4" width="45" height="26" rx="4" fill="#0F766E" />
+      <text x="377" y="21" fill="#FFF" font-size="12">+7d</text>
+      <rect x="418" y="4" width="34" height="26" rx="4" fill="#475569" />
+      <text x="424" y="21" fill="#FFF" font-size="11">Reset</text>
+    </g>
+
+    <!-- Client Status Indicator -->
+    <rect x="1160" y="56" width="256" height="30" rx="6" fill="#1E293B" />
+    <circle cx="1176" cy="71" r="5" fill="#38BDF8" />
+    <text x="1190" y="75" fill="#E2E8F0" font-size="12">Client kết nối: <tspan fill="#38BDF8" font-weight="700">2 Mobile</tspan> (192.168.1.5)</text>
+
+    <!-- Left Sidebar -->
+    <rect x="0" y="96" width="260" height="804" fill="#0B132B" />
+    <line x1="260" y1="96" x2="260" y2="900" stroke="#1E293B" stroke-width="1" />
+    <text x="24" y="130" fill="#475569" font-size="11" font-weight="700" letter-spacing="1">PHÂN HỆ NGHIỆP VỤ</text>
+    
+      <g id="Nav_DSK-01" cursor="pointer">
+        <rect x="16" y="110" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 122) scale(0.75)" />
+        <text x="64" y="136" fill="#94A3B8" font-size="14" font-weight="400">1. Tổng quan Dashboard</text>
+      </g>
+    
+      <g id="Nav_DSK-02" cursor="pointer">
+        <rect x="16" y="160" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 172) scale(0.75)" />
+        <text x="64" y="186" fill="#94A3B8" font-size="14" font-weight="400">2. Đề xuất FEFO &amp; Món</text>
+      </g>
+    
+      <g id="Nav_DSK-03" cursor="pointer">
+        <rect x="16" y="210" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 222) scale(0.75)" />
+        <text x="64" y="236" fill="#94A3B8" font-size="14" font-weight="400">3. Kho thực phẩm</text>
+      </g>
+    
+      <g id="Nav_DSK-04" cursor="pointer">
+        <rect x="16" y="260" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 272) scale(0.75)" />
+        <text x="64" y="286" fill="#94A3B8" font-size="14" font-weight="400">4. Trung tâm cảnh báo</text>
+      </g>
+    
+      <g id="Nav_DSK-05" cursor="pointer">
+        <rect x="16" y="310" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 322) scale(0.75)" />
+        <text x="64" y="336" fill="#94A3B8" font-size="14" font-weight="400">5. Nhật ký kiểm toán</text>
+      </g>
+    
+      <g id="Nav_DSK-06" cursor="pointer">
+        <rect x="16" y="360" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 372) scale(0.75)" />
+        <text x="64" y="386" fill="#94A3B8" font-size="14" font-weight="400">6. Quản lý danh mục</text>
+      </g>
+    
+      <g id="Nav_DSK-07" cursor="pointer">
+        <rect x="16" y="410" width="228" height="42" rx="8" fill="#0F766E" />
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 422) scale(0.75)" />
+        <text x="64" y="436" fill="#FFFFFF" font-size="14" font-weight="600">7. Cấu hình máy chủ</text>
+      </g>
+    
+
+    <!-- Sidebar Bottom System Tray Status -->
+    <g transform="translate(16, 790)">
+      <rect x="0" y="0" width="228" height="80" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <circle cx="20" cy="24" r="6" fill="#10B981" />
+      <text x="36" y="28" fill="#E2E8F0" font-size="13" font-weight="600">Dịch vụ nền Desktop</text>
+      <text x="36" y="48" fill="#94A3B8" font-size="11">Giao thức: Simulated RPC</text>
+      <text x="36" y="66" fill="#38BDF8" font-size="11">PIN ghép đôi: 123456</text>
+    </g>
+
+    <!-- Content Area Background -->
+    <rect x="260" y="96" width="1180" height="804" fill="#0F172A" />
+  
+  <g id="Content_DSK-07" transform="translate(284, 116)">
+    <text x="0" y="24" fill="#F8FAFC" font-size="22" font-weight="700">Cấu Hình Kết Nối Client–Server &amp; Thông Số Hệ Thống</text>
+    <text x="0" y="48" fill="#94A3B8" font-size="13">Quản lý giao thức mạng, mã PIN ghép nối và cơ chế sao lưu dữ liệu</text>
+
+    <g transform="translate(0, 70)">
+      <rect x="0" y="0" width="540" height="480" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <text x="24" y="34" fill="#F8FAFC" font-size="16" font-weight="700">Thông Số Kết Nối Client–Server</text>
+      
+      <g transform="translate(24, 60)">
+        <text x="0" y="20" fill="#94A3B8" font-size="13">Địa chỉ IP Server:</text>
+        <rect x="0" y="30" width="490" height="38" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+        <text x="16" y="54" fill="#38BDF8" font-size="14" font-weight="700">192.168.1.100 (Cổng 5173 / 5174)</text>
+
+        <text x="0" y="100" fill="#94A3B8" font-size="13">Mã PIN ghép đôi an toàn:</text>
+        <rect x="0" y="110" width="490" height="38" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+        <text x="16" y="134" fill="#F59E0B" font-size="16" font-weight="700" letter-spacing="4">123456</text>
+
+        <text x="0" y="180" fill="#94A3B8" font-size="13">Mã QR Ghép Đôi Nhanh (Mobile Scan):</text>
+        <rect x="0" y="195" width="140" height="140" rx="8" fill="#FFF" />
+        <rect x="15" y="210" width="30" height="30" fill="#000" /><rect x="22" y="217" width="16" height="16" fill="#FFF" />
+        <rect x="95" y="210" width="30" height="30" fill="#000" /><rect x="102" y="217" width="16" height="16" fill="#FFF" />
+        <rect x="15" y="290" width="30" height="30" fill="#000" /><rect x="22" y="297" width="16" height="16" fill="#FFF" />
+        <rect x="55" y="250" width="30" height="30" fill="#000" />
+      </g>
+
+      <g transform="translate(565, 0)">
+        <rect x="0" y="0" width="565" height="480" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" />
+        <text x="24" y="34" fill="#F8FAFC" font-size="16" font-weight="700">Ngưỡng Cảnh Báo &amp; Dữ Liệu Ban Đầu</text>
+
+        <g transform="translate(24, 60)">
+          <text x="0" y="20" fill="#94A3B8" font-size="13">Ngưỡng cảnh báo sắp hết hạn (Mặc định: 7 ngày):</text>
+          <rect x="0" y="30" width="510" height="38" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+          <text x="16" y="54" fill="#FFF" font-size="14">7 Ngày</text>
+
+          <text x="0" y="100" fill="#94A3B8" font-size="13">Ngưỡng nguy cấp (Dùng gấp trong ngày):</text>
+          <rect x="0" y="110" width="510" height="38" rx="6" fill="#0F172A" stroke="#334155" stroke-width="1" />
+          <text x="16" y="134" fill="#FFF" font-size="14">3 Ngày</text>
+
+          <rect x="0" y="180" width="510" height="80" rx="8" fill="#7F1D1D" opacity="0.3" stroke="#EF4444" stroke-width="1" />
+          <text x="16" y="210" fill="#FCA5A5" font-size="14" font-weight="700">Khôi phục dữ liệu mẫu ban đầu (Reset Seed)</text>
+          <text x="16" y="235" fill="#94A3B8" font-size="12">Đặt lại toàn bộ kho về 15 thực phẩm và 16 lô hàng mẫu</text>
+          <rect x="380" y="200" width="115" height="34" rx="6" fill="#EF4444" />
+          <text x="402" y="222" fill="#FFF" font-size="12" font-weight="700">Khôi phục</text>
+        </g>
+      </g>
+    </g>
+  </g>
+  </svg>

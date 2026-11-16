@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" style="background:#0F172A;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Frame: MOB-03: Food Detail & Action Sheet -->
+
+  
+    <rect x="0" y="0" width="390" height="844" rx="44" fill="#090D16" stroke="#1E293B" stroke-width="4" />
+    <rect x="135" y="10" width="120" height="30" rx="15" fill="#000" />
+    <text x="35" y="30" fill="#FFF" font-size="14" font-weight="600">9:41</text>
+    <rect x="0" y="44" width="390" height="52" fill="#0F172A" />
+    <text x="20" y="76" fill="#FFF" font-size="17" font-weight="700">Chi Tiết Thực Phẩm</text>
+    <rect x="270" y="58" width="100" height="24" rx="12" fill="#064E3B" />
+    <circle cx="282" cy="70" r="3.5" fill="#34D399" />
+    <text x="292" y="74" fill="#6EE7B7" font-size="10" font-weight="700">SERVER OK</text>
+    <g transform="translate(0, 770)">
+      <rect x="0" y="0" width="390" height="74" fill="#0F172A" />
+      <line x1="0" y1="0" x2="390" y2="0" stroke="#1E293B" stroke-width="1" />
+      
+      <g transform="translate(0, 0)">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Trang chủ</text>
+      </g>
+    
+      <g transform="translate(78, 0)">
+        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" fill="none" stroke="#0F766E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#0F766E" font-size="10" font-weight="700">Tủ lạnh</text>
+      </g>
+    
+      <g transform="translate(156, 0)">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Món ăn</text>
+      </g>
+    
+      <g transform="translate(234, 0)">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Cảnh báo</text>
+      </g>
+    
+      <g transform="translate(312, 0)">
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(28, 10) scale(0.75)" />
+        <text x="39" y="38" text-anchor="middle" fill="#94A3B8" font-size="10" font-weight="400">Cài đặt</text>
+      </g>
+    
+      <rect x="125" y="62" width="140" height="4" rx="2" fill="#64748B" />
+    </g>
+  
+  <g transform="translate(16, 110)">
+    <rect x="0" y="0" width="358" height="210" rx="12" fill="#1E293B" stroke="#334155" />
+    <rect x="16" y="16" width="326" height="110" rx="8" fill="#0F172A" />
+    <text x="179" y="80" text-anchor="middle" fill="#FFF" font-size="48">🥩</text>
+    <text x="20" y="155" fill="#FFF" font-size="18" font-weight="700">Thịt bò phi lê tươi</text>
+    <text x="20" y="178" fill="#94A3B8" font-size="12">Mã lô: LOT-003 • Nhập: 10/11/2026</text>
+    <rect x="250" y="145" width="90" height="26" rx="6" fill="#78350F" />
+    <text x="262" y="162" fill="#FCD34D" font-size="11" font-weight="700">Còn 2 ngày</text>
+
+    <g transform="translate(0, 225)">
+      <rect x="0" y="0" width="358" height="150" rx="10" fill="#1E293B" stroke="#334155" />
+      <text x="16" y="30" fill="#94A3B8" font-size="12">Tồn hiện tại:</text><text x="340" y="30" text-anchor="end" fill="#FFF" font-size="14" font-weight="700">500 g</text>
+      <line x1="16" y1="44" x2="340" y2="44" stroke="#334155" />
+      <text x="16" y="70" fill="#94A3B8" font-size="12">Vị trí lưu trữ:</text><text x="340" y="70" text-anchor="end" fill="#CBD5E1" font-size="13">Tủ lạnh &gt; Ngăn mát</text>
+      <line x1="16" y1="84" x2="340" y2="84" stroke="#334155" />
+      <text x="16" y="110" fill="#94A3B8" font-size="12">Hạn sử dụng:</text><text x="340" y="110" text-anchor="end" fill="#F87171" font-size="14" font-weight="700">17/11/2026</text>
+      <line x1="16" y1="124" x2="340" y2="124" stroke="#334155" />
+      <text x="16" y="142" fill="#94A3B8" font-size="12">Ghi chú:</text><text x="340" y="142" text-anchor="end" fill="#94A3B8" font-size="12">Mua tại siêu thị WinMart</text>
+    </g>
+
+    <g transform="translate(0, 395)">
+      <rect x="0" y="0" width="358" height="240" rx="14" fill="#0B132B" stroke="#0F766E" stroke-width="2" filter="url(#shadow)" />
+      <text x="20" y="30" fill="#FFF" font-size="15" font-weight="700">MOB-S01: Dùng Thực Phẩm (Trừ Kho)</text>
+      <text x="20" y="50" fill="#94A3B8" font-size="11">Chọn khối lượng cần sử dụng:</text>
+
+      <g transform="translate(20, 68)">
+        <rect x="0" y="0" width="60" height="50" rx="8" fill="#1E293B" stroke="#334155" />
+        <text x="30" y="32" text-anchor="middle" fill="#FFF" font-size="24">−</text>
+
+        <rect x="75" y="0" width="168" height="50" rx="8" fill="#0F172A" stroke="#0F766E" />
+        <text x="159" y="32" text-anchor="middle" fill="#38BDF8" font-size="20" font-weight="700">200 g</text>
+
+        <rect x="258" y="0" width="60" height="50" rx="8" fill="#1E293B" stroke="#334155" />
+        <text x="288" y="32" text-anchor="middle" fill="#FFF" font-size="24">+</text>
+      </g>
+
+      <g transform="translate(20, 132)">
+        <rect x="0" y="0" width="70" height="28" rx="14" fill="#1E293B" /><text x="18" y="18" fill="#CBD5E1" font-size="11">100g</text>
+        <rect x="80" y="0" width="70" height="28" rx="14" fill="#0F766E" /><text x="98" y="18" fill="#FFF" font-size="11" font-weight="700">200g</text>
+        <rect x="160" y="0" width="70" height="28" rx="14" fill="#1E293B" /><text x="178" y="18" fill="#CBD5E1" font-size="11">300g</text>
+        <rect x="240" y="0" width="78" height="28" rx="14" fill="#78350F" /><text x="252" y="18" fill="#FCD34D" font-size="11">Dùng hết</text>
+      </g>
+
+      <g cursor="pointer" transform="translate(20, 175)">
+        <rect x="0" y="0" width="318" height="46" rx="8" fill="#0F766E" />
+        <text x="159" y="28" text-anchor="middle" fill="#FFF" font-size="14" font-weight="700">XÁC NHẬN DÙNG (CÒN LẠI 300g)</text>
+      </g>
+    </g>
+  </g>
+  </svg>

@@ -1,0 +1,231 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 900" width="1440" height="900" style="background:#0F172A;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F766E"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Frame: DSK-03: Inventory & Drawer -->
+
+  
+    <!-- Top OS Window Bar -->
+    <rect x="0" y="0" width="1440" height="44" fill="#090D16" />
+    <circle cx="24" cy="22" r="6" fill="#EF4444" />
+    <circle cx="42" cy="22" r="6" fill="#F59E0B" />
+    <circle cx="60" cy="22" r="6" fill="#10B981" />
+    <text x="84" y="27" fill="#64748B" font-size="13" font-weight="500">QUẢN LÝ THỰC PHẨM GIA ĐÌNH &amp; ĐỀ XUẤT FEFO — SERVER WORKBENCH (Desktop App)</text>
+    <rect x="1260" y="10" width="160" height="24" rx="12" fill="#1E293B" />
+    <circle cx="1275" cy="22" r="4" fill="#10B981" />
+    <text x="1288" y="26" fill="#10B981" font-size="12" font-weight="600">Port 5173 • Online</text>
+
+    <!-- Top App Navigation Bar -->
+    <rect x="0" y="44" width="1440" height="52" fill="#0F172A" />
+    <line x1="0" y1="96" x2="1440" y2="96" stroke="#1E293B" stroke-width="1" />
+    <rect x="24" y="56" width="30" height="28" rx="6" fill="url(#primaryGrad)" />
+    <text x="32" y="76" fill="#FFF" font-size="16" font-weight="700">QP</text>
+    <text x="64" y="75" fill="#F8FAFC" font-size="17" font-weight="700">FoodManagement<tspan fill="#14B8A6">Server</tspan></text>
+    
+    <!-- Time Simulator Controls in Header -->
+    <g id="Time_Simulator_Bar" transform="translate(680, 54)">
+      <rect x="0" y="0" width="460" height="34" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <text x="14" y="22" fill="#94A3B8" font-size="12">Thời gian giả lập:</text>
+      <text x="120" y="22" fill="#38BDF8" font-size="13" font-weight="700">15/11/2026</text>
+      <rect x="210" y="4" width="45" height="26" rx="4" fill="#334155" />
+      <text x="222" y="21" fill="#FFF" font-size="12">-1d</text>
+      <rect x="262" y="4" width="45" height="26" rx="4" fill="#0F766E" />
+      <text x="273" y="21" fill="#FFF" font-size="12">+1d</text>
+      <rect x="314" y="4" width="45" height="26" rx="4" fill="#0F766E" />
+      <text x="325" y="21" fill="#FFF" font-size="12">+3d</text>
+      <rect x="366" y="4" width="45" height="26" rx="4" fill="#0F766E" />
+      <text x="377" y="21" fill="#FFF" font-size="12">+7d</text>
+      <rect x="418" y="4" width="34" height="26" rx="4" fill="#475569" />
+      <text x="424" y="21" fill="#FFF" font-size="11">Reset</text>
+    </g>
+
+    <!-- Client Status Indicator -->
+    <rect x="1160" y="56" width="256" height="30" rx="6" fill="#1E293B" />
+    <circle cx="1176" cy="71" r="5" fill="#38BDF8" />
+    <text x="1190" y="75" fill="#E2E8F0" font-size="12">Client kết nối: <tspan fill="#38BDF8" font-weight="700">2 Mobile</tspan> (192.168.1.5)</text>
+
+    <!-- Left Sidebar -->
+    <rect x="0" y="96" width="260" height="804" fill="#0B132B" />
+    <line x1="260" y1="96" x2="260" y2="900" stroke="#1E293B" stroke-width="1" />
+    <text x="24" y="130" fill="#475569" font-size="11" font-weight="700" letter-spacing="1">PHÂN HỆ NGHIỆP VỤ</text>
+    
+      <g id="Nav_DSK-01" cursor="pointer">
+        <rect x="16" y="110" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M3 3h7v7H3zm11 0h7v7h-7zM3 14h7v7H3zm11 0h7v7h-7z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 122) scale(0.75)" />
+        <text x="64" y="136" fill="#94A3B8" font-size="14" font-weight="400">1. Tổng quan Dashboard</text>
+      </g>
+    
+      <g id="Nav_DSK-02" cursor="pointer">
+        <rect x="16" y="160" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 172) scale(0.75)" />
+        <text x="64" y="186" fill="#94A3B8" font-size="14" font-weight="400">2. Đề xuất FEFO &amp; Món</text>
+      </g>
+    
+      <g id="Nav_DSK-03" cursor="pointer">
+        <rect x="16" y="210" width="228" height="42" rx="8" fill="#0F766E" />
+        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 222) scale(0.75)" />
+        <text x="64" y="236" fill="#FFFFFF" font-size="14" font-weight="600">3. Kho thực phẩm</text>
+      </g>
+    
+      <g id="Nav_DSK-04" cursor="pointer">
+        <rect x="16" y="260" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 272) scale(0.75)" />
+        <text x="64" y="286" fill="#94A3B8" font-size="14" font-weight="400">4. Trung tâm cảnh báo</text>
+      </g>
+    
+      <g id="Nav_DSK-05" cursor="pointer">
+        <rect x="16" y="310" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 322) scale(0.75)" />
+        <text x="64" y="336" fill="#94A3B8" font-size="14" font-weight="400">5. Nhật ký kiểm toán</text>
+      </g>
+    
+      <g id="Nav_DSK-06" cursor="pointer">
+        <rect x="16" y="360" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M4 6h16M4 12h16M4 18h16" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 372) scale(0.75)" />
+        <text x="64" y="386" fill="#94A3B8" font-size="14" font-weight="400">6. Quản lý danh mục</text>
+      </g>
+    
+      <g id="Nav_DSK-07" cursor="pointer">
+        <rect x="16" y="410" width="228" height="42" rx="8" fill="transparent" />
+        <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" transform="translate(32, 422) scale(0.75)" />
+        <text x="64" y="436" fill="#94A3B8" font-size="14" font-weight="400">7. Cấu hình máy chủ</text>
+      </g>
+    
+
+    <!-- Sidebar Bottom System Tray Status -->
+    <g transform="translate(16, 790)">
+      <rect x="0" y="0" width="228" height="80" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <circle cx="20" cy="24" r="6" fill="#10B981" />
+      <text x="36" y="28" fill="#E2E8F0" font-size="13" font-weight="600">Dịch vụ nền Desktop</text>
+      <text x="36" y="48" fill="#94A3B8" font-size="11">Giao thức: Simulated RPC</text>
+      <text x="36" y="66" fill="#38BDF8" font-size="11">PIN ghép đôi: 123456</text>
+    </g>
+
+    <!-- Content Area Background -->
+    <rect x="260" y="96" width="1180" height="804" fill="#0F172A" />
+  
+  <g id="Content_DSK-03" transform="translate(284, 116)">
+    <text x="0" y="24" fill="#F8FAFC" font-size="22" font-weight="700">Quản Lý Kho Thực Phẩm &amp; Lô Hàng</text>
+    <text x="0" y="48" fill="#94A3B8" font-size="13">Tìm kiếm, lọc 5 tiêu chuẩn và thao tác trực tiếp trên từng lô hàng</text>
+
+    <!-- Filter Bar -->
+    <g transform="translate(0, 65)">
+      <rect x="0" y="0" width="280" height="38" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <text x="36" y="24" fill="#94A3B8" font-size="13">🔍 Tìm tên, mã lô...</text>
+
+      <rect x="295" y="0" width="170" height="38" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <text x="310" y="24" fill="#E2E8F0" font-size="13">Nhóm: Tất cả (7)</text>
+
+      <rect x="480" y="0" width="170" height="38" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <text x="495" y="24" fill="#E2E8F0" font-size="13">Vị trí: Tủ lạnh (8)</text>
+
+      <rect x="665" y="0" width="150" height="38" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      <text x="680" y="24" fill="#E2E8F0" font-size="13">Đang sử dụng</text>
+
+      <g transform="translate(840, 0)">
+        <rect x="0" y="0" width="130" height="38" rx="6" fill="#0F766E" />
+        <text x="18" y="24" fill="#FFF" font-size="13" font-weight="600">+ Nhập thực phẩm</text>
+
+        <rect x="145" y="0" width="145" height="38" rx="6" fill="#1E293B" stroke="#38BDF8" stroke-width="1" />
+        <text x="160" y="24" fill="#38BDF8" font-size="13">📷 Quét AI Scan</text>
+      </g>
+    </g>
+
+    <!-- Main Data Table (Width: 720) -->
+    <g transform="translate(0, 120)">
+      <rect x="0" y="0" width="720" height="560" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" />
+      
+      <rect x="16" y="16" width="688" height="36" rx="6" fill="#334155" />
+      <text x="30" y="39" fill="#CBD5E1" font-size="12" font-weight="600">MÃ LÔ</text>
+      <text x="110" y="39" fill="#CBD5E1" font-size="12" font-weight="600">TÊN THỰC PHẨM</text>
+      <text x="250" y="39" fill="#CBD5E1" font-size="12" font-weight="600">SỐ LƯỢNG</text>
+      <text x="360" y="39" fill="#CBD5E1" font-size="12" font-weight="600">HẠN DÙNG</text>
+      <text x="470" y="39" fill="#CBD5E1" font-size="12" font-weight="600">VỊ TRÍ</text>
+      <text x="590" y="39" fill="#CBD5E1" font-size="12" font-weight="600">THAO TÁC</text>
+
+      <!-- Row 1 Selected -->
+      <rect x="16" y="60" width="688" height="46" rx="4" fill="#0F766E" opacity="0.25" stroke="#0F766E" stroke-width="1" />
+      <text x="30" y="88" fill="#38BDF8" font-size="13" font-weight="700">LOT-001</text>
+      <text x="110" y="88" fill="#FFF" font-size="13" font-weight="600">Sữa tươi thanh trùng</text>
+      <text x="250" y="88" fill="#E2E8F0" font-size="13">2 hộp (900 ml)</text>
+      <text x="360" y="88" fill="#EF4444" font-size="13">16/11 (1d)</text>
+      <text x="470" y="88" fill="#94A3B8" font-size="13">Cánh tủ lạnh</text>
+      <rect x="590" y="72" width="55" height="24" rx="4" fill="#0F766E" />
+      <text x="602" y="88" fill="#FFF" font-size="11">Chi tiết</text>
+
+      <!-- Row 2 -->
+      <rect x="16" y="112" width="688" height="46" rx="4" fill="#0F172A" />
+      <text x="30" y="140" fill="#38BDF8" font-size="13" font-weight="700">LOT-002</text>
+      <text x="110" y="140" fill="#FFF" font-size="13" font-weight="600">Sữa chua Vinamilk</text>
+      <text x="250" y="140" fill="#E2E8F0" font-size="13">4 hộp (100g)</text>
+      <text x="360" y="140" fill="#34D399" font-size="13">28/11 (13d)</text>
+      <text x="470" y="140" fill="#94A3B8" font-size="13">Ngăn mát</text>
+      <rect x="590" y="124" width="55" height="24" rx="4" fill="#334155" />
+      <text x="602" y="140" fill="#CBD5E1" font-size="11">Chi tiết</text>
+
+      <!-- Row 3 -->
+      <rect x="16" y="164" width="688" height="46" rx="4" fill="#1E293B" />
+      <text x="30" y="192" fill="#38BDF8" font-size="13" font-weight="700">LOT-003</text>
+      <text x="110" y="192" fill="#FFF" font-size="13" font-weight="600">Thịt bò phi lê</text>
+      <text x="250" y="192" fill="#E2E8F0" font-size="13">500 g</text>
+      <text x="360" y="192" fill="#FBBF24" font-size="13">17/11 (2d)</text>
+      <text x="470" y="192" fill="#94A3B8" font-size="13">Ngăn đông</text>
+      <rect x="590" y="176" width="55" height="24" rx="4" fill="#334155" />
+      <text x="602" y="192" fill="#CBD5E1" font-size="11">Chi tiết</text>
+    </g>
+
+    <!-- Right: Slide-Over Detail Drawer DSK-03-D (Width: 390) -->
+    <g id="Drawer_DSK-03-D" transform="translate(740, 120)">
+      <rect x="0" y="0" width="390" height="560" rx="10" fill="#0B132B" stroke="#0F766E" stroke-width="1.5" filter="url(#shadow)" />
+      
+      <text x="20" y="32" fill="#FFF" font-size="17" font-weight="700">Chi Tiết Lô: LOT-001</text>
+      <rect x="340" y="16" width="28" height="28" rx="14" fill="#334155" />
+      <text x="350" y="34" fill="#FFF" font-size="13">✕</text>
+
+      <rect x="20" y="55" width="350" height="120" rx="8" fill="#1E293B" />
+      <text x="40" y="125" fill="#FFF" font-size="42">🥛</text>
+      <text x="110" y="90" fill="#FFF" font-size="16" font-weight="700">Sữa tươi thanh trùng</text>
+      <text x="110" y="112" fill="#94A3B8" font-size="12">Nhãn hiệu: TH True Milk</text>
+      <rect x="110" y="124" width="85" height="22" rx="4" fill="#7F1D1D" />
+      <text x="118" y="139" fill="#FCA5A5" font-size="11" font-weight="700">CÒN 1 NGÀY</text>
+
+      <g transform="translate(20, 195)">
+        <text x="0" y="20" fill="#94A3B8" font-size="13">Số lượng hiện tại:</text>
+        <text x="350" y="20" text-anchor="end" fill="#FFF" font-size="14" font-weight="700">2 Hộp (900 ml)</text>
+
+        <text x="0" y="50" fill="#94A3B8" font-size="13">Ngày nhập kho:</text>
+        <text x="350" y="50" text-anchor="end" fill="#CBD5E1" font-size="13">10/11/2026 (TXN-001)</text>
+
+        <text x="0" y="80" fill="#94A3B8" font-size="13">Hạn sử dụng:</text>
+        <text x="350" y="80" text-anchor="end" fill="#F87171" font-size="13" font-weight="700">16/11/2026</text>
+
+        <text x="0" y="110" fill="#94A3B8" font-size="13">Vị trí lưu trữ:</text>
+        <text x="350" y="110" text-anchor="end" fill="#CBD5E1" font-size="13">Tủ lạnh &gt; Cánh tủ</text>
+
+        <text x="0" y="140" fill="#94A3B8" font-size="13">Giá trị ước tính:</text>
+        <text x="350" y="140" text-anchor="end" fill="#38BDF8" font-size="13">68.000 đ</text>
+      </g>
+
+      <g transform="translate(20, 480)">
+        <rect x="0" y="0" width="105" height="38" rx="6" fill="#0F766E" />
+        <text x="24" y="24" fill="#FFF" font-size="13">Xuất kho</text>
+
+        <rect x="115" y="0" width="115" height="38" rx="6" fill="#1E293B" stroke="#334155" stroke-width="1" />
+        <text x="130" y="24" fill="#E2E8F0" font-size="13">Đổi vị trí</text>
+
+        <rect x="240" y="0" width="110" height="38" rx="6" fill="#7F1D1D" />
+        <text x="258" y="24" fill="#FCA5A5" font-size="13">Vứt hủy</text>
+      </g>
+    </g>
+  </g>
+  </svg>
