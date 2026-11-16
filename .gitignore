@@ -9,3 +9,9 @@ Thumbs.db
 coverage/
 playwright-report/
 test-results/
+
+# Documents & course reports
+docs/
+giaodiendukien/docs/
+*.docx
+*.sql

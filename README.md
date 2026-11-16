@@ -34,7 +34,6 @@ Quan_ly_Thuc_Pham/
     ├── shared-sim/                        # Lõi thuật toán FEFO & mô phỏng giao thức mạng
     ├── tests/                             # Bộ kiểm thử tự động (Vitest & E2E Flow)
     ├── specs/                             # Hồ sơ đặc tả Spec Kit (Phân rã 87 chức năng)
-    ├── docs/                              # Tài liệu BTL, file CSDL .sql & sơ đồ luồng
     └── .specify/                          # Quy chuẩn kiến trúc & hiến pháp dự án
 ```
 
@@ -79,7 +78,6 @@ npm test
 
 ## 📋 Tài Liệu & Thiết Kế
 - **Thiết kế Figma & Phác thảo Wireframe**: Lưu tại thư mục [`Documents/figma/`](./Documents/figma/) (Gồm file gốc `.fig`, bộ vector SVG 34 màn hình và trình duyệt [`figma_canvas_viewer.html`](./Documents/figma/figma_canvas_viewer.html))
-- **Hồ sơ kỹ thuật UI Prototype**: Lưu tại [`giaodiendukien/docs/`](./giaodiendukien/docs/)
 - **Đặc tả chi tiết 27 màn hình và các luồng nghiệp vụ**: [`giaodiendukien/Thiet_ke_cau_truc_giao_dien_du_kien.md`](./giaodiendukien/Thiet_ke_cau_truc_giao_dien_du_kien.md)
 - **Kế hoạch phân rã chức năng Spec Kit**: [`giaodiendukien/specs/001-ui-prototype/`](./giaodiendukien/specs/001-ui-prototype/)
 

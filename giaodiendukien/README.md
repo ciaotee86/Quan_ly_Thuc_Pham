@@ -1,4 +1,4 @@
-# Giao Diện Dự Kiến (`Quan_ly_Thuc_Pham/giaodiendukien`)
+﻿# Giao Diện Dự Kiến (`Quan_ly_Thuc_Pham/giaodiendukien`)
 
 Thư mục này chứa **toàn bộ giao diện dự kiến** của hệ thống Quản lý Thực phẩm Gia đình & Gợi ý FEFO (mô hình Client–Server), bao gồm cả **mã nguồn ứng dụng chạy thực tế (UI Prototype)** và **hồ sơ tài liệu phân tích, đặc tả, bản vẽ khung (Wireframes)**.
 
@@ -62,6 +62,5 @@ giaodiendukien/
 │       ├── plan.md                        # Kế hoạch kiến trúc, 3 UI Concept & ASCII Wireframes
 │       ├── tasks.md                       # Tiến độ 30 tác vụ (T001–T030)
 │       └── ui-tokens-contract.md          # Hệ thống Design Tokens CSS
-├── .specify/                              # Cấu hình Spec Kit & Hiến pháp dự án
-└── docs/                                  # Tài liệu đầu vào, CSDL, sơ đồ luồng & ADR
+└── .specify/                              # Cấu hình Spec Kit & Hiến pháp dự án
 ```
