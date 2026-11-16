@@ -3,8 +3,6 @@ server/core_services.py
 =============================================================================
 ĐỘNG CƠ LÕI NGHIỆP VỤ & THUẬT TOÁN FEFO (PHẦN 2)
 Dự án: Quản lý thực phẩm gia đình - Môn Lập trình Mạng (TS. Đặng Hùng Vĩ)
-
-KHỚP 100% VỚI ĐẶC TẢ GIAO DIỆN DỰ KIẾN (giaodiendukien):
 - Chuẩn phân loại 3 mức ưu tiên: 'Cao' (High), 'Trung bình' (Medium), 'Thấp' (Low).
 - Xếp hạng FEFO (Hạn gần trước: expiry_date ASC).
 - Tie-breaker FIFO: Nếu cùng hạn dùng thì nhập trước dùng trước (import_date ASC, item_id ASC).
