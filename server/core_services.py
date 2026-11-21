@@ -3,14 +3,23 @@ server/core_services.py
 =============================================================================
 ĐỘNG CƠ LÕI NGHIỆP VỤ & THUẬT TOÁN FEFO (PHẦN 2)
 Dự án: Quản lý thực phẩm gia đình - Môn Lập trình Mạng (TS. Đặng Hùng Vĩ)
-- Chuẩn phân loại 3 mức ưu tiên: 'Cao' (High), 'Trung bình' (Medium), 'Thấp' (Low).
-- Xếp hạng FEFO (Hạn gần trước: expiry_date ASC).
-- Tie-breaker FIFO: Nếu cùng hạn dùng thì nhập trước dùng trước (import_date ASC, item_id ASC).
-- Nhóm đồng hạn: Tính fifo_tie_group_size và fifo_tie_position (VD: Đồng hạn #1/2).
-- Tự động sinh priority_reason và suggested_action chi tiết cho từng thẻ.
-- Tự động tách đồ quá hạn (DaysLeft < 0) vào expired_excluded_count.
-- Động cơ gợi ý món ăn thông minh khớp nguyên liệu cận hạn với công thức recipes.
-- Hệ thống cảnh báo kép (Hết hạn, Sắp hết hạn, Chạm ngưỡng tồn kho tối thiểu).
+Nhóm thực hiện: Nhóm Thầy Bùa Mao Sơn
+Kỹ sư phụ trách: Nguyễn Hữu Nhân (Mảng Động cơ Thuật toán & Nghiệp vụ Lõi)
+
+CÁC TÍNH NĂNG NÂNG CẤP ĐỘT PHÁ:
+1. Thuật toán hòa hạn FEFO 3 cấp độ (Multi-level Tie-breaker):
+   - Tầng 1: Hạn dùng gần nhất trước (expiry_date ASC).
+   - Tầng 2: Nếu trùng hạn, lô nhập trước dùng trước (import_date ASC - FIFO).
+   - Tầng 3: Nếu cùng hạn và cùng ngày nhập, ưu tiên lô có số lượng ít hơn
+             (current_quantity ASC) để giải phóng triệt để diện tích ngăn tủ (Space Liberation).
+2. Cơ chế Match Score thông minh cho công thức món ăn:
+   - Hệ số nhân khẩn cấp (Emergency Multiplier): Món tận dụng nguyên liệu cận hạn (<= 2 ngày)
+     được nhân 1.3 (tăng 30% điểm ưu tiên) để đẩy lên đầu danh sách gợi ý.
+   - Tách riêng danh mục "Gia vị cơ bản" (Pantry Staples White-list): Nếu thiếu muối, mắm,
+     tiêu, đường... KHÔNG trừ điểm Match Score vì gia đình nào cũng có sẵn.
+3. Thuật toán gom cụm Danh sách Đi chợ thông minh (Smart Grouping - GET /api/shopping-list):
+   - Tự động gom nhóm theo Quầy hàng thực tế (Tươi sống, Rau củ, Gia vị & Đồ khô, Trứng & Sữa).
+   - Định lượng mua đề xuất thông minh: Bằng (Ngưỡng an toàn tối đa - Tồn thực tế) + Lượng thiếu cho món nấu.
 =============================================================================
 """
 
@@ -25,6 +34,17 @@ from server.database import (
     DatabaseTransaction,
     get_connection
 )
+
+# -----------------------------------------------------------------------------
+# DANH MỤC GIA VỊ CƠ BẢN (PANTRY STAPLES WHITE-LIST)
+# Quy tắc: Thiếu gia vị cơ bản không trừ điểm Match Score công thức món ăn
+# -----------------------------------------------------------------------------
+BASIC_STAPLES_WHITELIST = {
+    "muối", "muối ăn", "đường", "đường cát", "tiêu", "tiêu đen", "tiêu đen xay",
+    "tiêu sọ", "tiêu đen xay phú quốc", "nước mắm", "nước mắm nam ngư", "hạt nêm",
+    "hạt nêm knorr", "hạt nêm knorr thịt thăn", "bột ngọt", "mì chính", "dầu ăn",
+    "nước tương", "xì dầu", "tỏi", "hành tím", "hành tím khô", "tỏi khô", "ớt"
+}
 
 
 # -----------------------------------------------------------------------------
@@ -134,12 +154,16 @@ def build_priority_reason(
     tie_position: int,
     expiry_date: str,
     import_date: str,
-    location_name: str
+    location_name: str,
+    current_quantity: float = 0.0,
+    unit_name: str = "",
+    has_same_import_tie: bool = False
 ) -> str:
     """
-    Sinh chuỗi giải trình quy tắc FEFO chuẩn theo giao diện dự kiến (fefo-recommender.ts).
-    Ví dụ:
-    - 'Chỉ còn 1 ngày sử dụng, cần ưu tiên chế biến ngay · Đồng hạn 2026-11-19, xếp FIFO #1/2 (nhập 2026-11-08).'
+    Sinh chuỗi giải trình quy tắc FEFO 3 tầng:
+    Tầng 1: Hạn dùng (days_remaining)
+    Tầng 2: Ngày nhập FIFO (tie_position / tie_group_size)
+    Tầng 3: Dung tích tồn ít hơn (ưu tiên dọn khay dở dang để giải phóng ngăn chứa).
     """
     if days_remaining == 0:
         day_label = "Hết hạn ngay hôm nay"
@@ -153,6 +177,8 @@ def build_priority_reason(
     fifo_suffix = ""
     if tie_group_size > 1:
         fifo_suffix = f" · Đồng hạn {expiry_date}, xếp FIFO #{tie_position}/{tie_group_size} (nhập {import_date})"
+        if has_same_import_tie and current_quantity > 0:
+            fifo_suffix += f", ưu tiên dọn khay dở ({current_quantity} {unit_name})"
 
     if priority == 'Cao':
         return f"{day_label}, cần ưu tiên chế biến ngay{fifo_suffix}."
@@ -173,7 +199,7 @@ def build_suggested_action(priority: str) -> str:
 
 
 # -----------------------------------------------------------------------------
-# 3. THUẬT TOÁN ĐỀ XUẤT TIÊU DÙNG FEFO KẾT HỢP TIE-BREAKER FIFO
+# 3. THUẬT TOÁN ĐỀ XUẤT FEFO 3 CẤP ĐỘ (MULTI-LEVEL TIE-BREAKER)
 # -----------------------------------------------------------------------------
 
 def get_fefo_recommendations(
@@ -184,20 +210,21 @@ def get_fefo_recommendations(
     priority_level: Optional[str] = None
 ) -> Dict[str, Any]:
     """
-    Động cơ FEFO chuẩn hóa khớp 100% với giao diện dự kiến (fefo-recommender.ts):
-    1. Lọc các lô còn tồn kho (current_quantity > 0) và trạng thái hợp lệ ('Đang sử dụng' hoặc 'ACTIVE').
+    Động cơ FEFO Nâng Cấp Hòa Hạn 3 Tầng:
+    1. Lọc các lô còn tồn kho (current_quantity > 0) và trạng thái hợp lệ.
     2. Tách đồ quá hạn (days_remaining < 0) vào expired_excluded_count.
-    3. Sắp xếp FEFO: expiry_date ASC (Hạn gần nhất lên trước).
-    4. Tie-breaker FIFO: Nếu cùng hạn dùng, import_date ASC (nhập trước ăn trước), rồi đến item_id ASC.
-    5. Tính nhóm đồng hạn FIFO: fifo_tie_group_size, fifo_tie_position.
-    6. Sinh giải trình priority_reason và suggested_action.
-    7. Khớp công thức món ăn liên quan (matching_recipe_ids).
-    8. Trả về cấu trúc FefoListResult chuẩn.
+    3. SẮP XẾP HÒA HẠN 3 TẦNG:
+       - Tầng 1: expiry_date ASC (Hạn gần nhất xếp trước - FEFO cốt lõi).
+       - Tầng 2: import_date ASC (Lô mua trước ăn trước - FIFO).
+       - Tầng 3: current_quantity ASC (Cùng hạn, cùng ngày nhập -> Lô còn ít hơn ăn trước
+                 để dọn sạch khay dở dang, giải phóng ngăn tủ lạnh).
+       - Deterministic Tie-breaker: item_id ASC.
+    4. Phân tích nhóm đồng hạn và sinh priority_reason & suggested_action.
+    5. Khớp công thức món ăn liên quan (matching_recipe_ids).
     """
     config = get_system_config()
     ref_date = system_date or config["simulation_date"]
 
-    # Đọc dữ liệu từ SQLite
     sql = """
         SELECT 
             fi.item_id,
@@ -230,7 +257,6 @@ def get_fefo_recommendations(
     raw_items = query_all(sql)
     recipes = get_all_recipes()
 
-    # 1. Lọc và tính số ngày còn lại
     eligible_lots = []
     expired_excluded_count = 0
 
@@ -250,19 +276,38 @@ def get_fefo_recommendations(
         it_dict['expiration_date'] = exp_date
         eligible_lots.append(it_dict)
 
-    # 2. SẮP XẾP FEFO CỐT LÕI + TIE-BREAKER FIFO
-    # Tiêu chí 1: expiry_date ASC
-    # Tiêu chí 2: import_date ASC (FIFO)
-    # Tiêu chí 3: item_id ASC
-    eligible_lots.sort(key=lambda x: (x['expiry_date'], x['import_date'], x['item_id']))
+    # -------------------------------------------------------------------------
+    # NÂNG CẤP THUẬT TOÁN HÒA HẠN 3 TẦNG (MULTI-LEVEL TIE-BREAKER)
+    # Tầng 1: expiry_date ASC (FEFO)
+    # Tầng 2: import_date ASC (FIFO)
+    # Tầng 3: current_quantity ASC (Dung tích tồn - Lô dở dang ưu tiên giải phóng diện tích)
+    # Tầng 4: item_id ASC (Xác định tuyệt đối)
+    # -------------------------------------------------------------------------
+    eligible_lots.sort(
+        key=lambda x: (
+            x['expiry_date'],
+            x['import_date'],
+            float(x['current_quantity']),
+            x['item_id']
+        )
+    )
 
-    # 3. Gom nhóm theo expiry_date để tính FIFO Tie Group
+    # Gom nhóm theo expiry_date để tính FIFO Tie Group (Tầng 1 & 2)
     tie_groups: Dict[str, List[Dict[str, Any]]] = {}
+    same_import_groups: Dict[tuple, List[Dict[str, Any]]] = {}
+
     for lot in eligible_lots:
         ed = lot['expiry_date']
+        imd = lot['import_date']
+        
         if ed not in tie_groups:
             tie_groups[ed] = []
         tie_groups[ed].append(lot)
+
+        key_import = (ed, imd)
+        if key_import not in same_import_groups:
+            same_import_groups[key_import] = []
+        same_import_groups[key_import].append(lot)
 
     counts_by_priority = {
         "Cao": 0,
@@ -270,7 +315,6 @@ def get_fefo_recommendations(
         "Thấp": 0
     }
 
-    # 4. Gán xếp hạng Rank, Priority và Giải trình
     ranked_items = []
     for idx, lot in enumerate(eligible_lots):
         days_rem = lot['days_remaining']
@@ -283,6 +327,9 @@ def get_fefo_recommendations(
         tie_group_size = len(tg)
         tie_position = next((i + 1 for i, entry in enumerate(tg) if entry['item_id'] == lot['item_id']), 1)
 
+        sig = same_import_groups.get((lot['expiry_date'], lot['import_date']), [lot])
+        has_same_import_tie = len(sig) > 1
+
         reason = build_priority_reason(
             days_remaining=days_rem,
             priority=priority,
@@ -290,7 +337,10 @@ def get_fefo_recommendations(
             tie_position=tie_position,
             expiry_date=lot['expiry_date'],
             import_date=lot['import_date'],
-            location_name=lot['location_name']
+            location_name=lot['location_name'],
+            current_quantity=float(lot['current_quantity']),
+            unit_name=lot['unit_name'],
+            has_same_import_tie=has_same_import_tie
         )
         action = build_suggested_action(priority)
 
@@ -308,14 +358,12 @@ def get_fefo_recommendations(
                     "cooking_guide": r['cooking_guide']
                 })
 
-        # Chuẩn hóa area_type hiển thị
         area = lot.get('area_type', '')
         if area in ('FREEZER', 'CHILLER', 'DOOR', 'VEG_BOX'):
             area = 'Trong tủ lạnh'
         elif area in ('PANTRY',):
             area = 'Ngoài tủ lạnh'
 
-        # Đóng gói item
         item_obj = {
             "rank": idx + 1,
             "item_id": lot['item_id'],
@@ -349,6 +397,7 @@ def get_fefo_recommendations(
             "suggested_action": action,
             "fifo_tie_group_size": tie_group_size,
             "fifo_tie_position": tie_position,
+            "has_same_import_tie": has_same_import_tie,
             "matching_recipe_ids": matched_recipe_ids,
             "suggested_recipes": matched_recipes,
             "status": lot['status'],
@@ -356,7 +405,6 @@ def get_fefo_recommendations(
         }
         ranked_items.append(item_obj)
 
-    # 5. Bộ lọc (nếu có tham số truyền vào từ client)
     filtered_items = ranked_items
     if area_type and area_type != 'all':
         filtered_items = [i for i in filtered_items if i['area_type'] == area_type]
@@ -369,7 +417,7 @@ def get_fefo_recommendations(
         "success": True,
         "reference_date": ref_date,
         "items": filtered_items,
-        "data": filtered_items,               # Tương thích ngược với client cũ
+        "data": filtered_items,
         "count": len(filtered_items),
         "counts_by_priority": counts_by_priority,
         "expired_excluded_count": expired_excluded_count
@@ -377,8 +425,14 @@ def get_fefo_recommendations(
 
 
 # -----------------------------------------------------------------------------
-# 4. GỢI Ý MÓN ĂN & KHỚP NGUYÊN LIỆU CẬN HẠN (RECIPE MATCH ENGINE)
+# 4. GỢI Ý MÓN ĂN THÔNG MINH (EMERGENCY MULTIPLIER & TÁCH GIA VỊ CƠ BẢN)
 # -----------------------------------------------------------------------------
+
+def is_basic_staple(ingredient_name: str) -> bool:
+    """Kiểm tra nguyên liệu có phải gia vị cơ bản gia đình hay không."""
+    name_clean = ingredient_name.strip().lower()
+    return any(staple in name_clean or name_clean in staple for staple in BASIC_STAPLES_WHITELIST)
+
 
 def get_all_recipes() -> List[Dict[str, Any]]:
     """Lấy danh sách công thức nấu ăn gia đình từ CSDL."""
@@ -400,12 +454,10 @@ def suggest_recipes(
     system_date: Optional[str] = None
 ) -> List[Dict[str, Any]]:
     """
-    Động cơ gợi ý món ăn thông minh chuẩn theo giao diện dự kiến:
-    Công thức tính điểm match_score:
-        score = (matched_high_priority_count * 35) + (matched_fefo_count * 15) + (ready_count * 10) - (missing_count * 5)
-    
-    Hỗ trợ focus_item_id: Khi người dùng bấm vào 1 món cận hạn trên giao diện,
-    hệ thống ưu tiên lọc các món có thể dùng món này để giải cứu ngay!
+    Động cơ gợi ý món ăn thông minh với 2 cải tiến:
+    1. Tách riêng "Gia vị cơ bản" (Pantry Staples): Thiếu muối, tiêu, mắm... KHÔNG trừ điểm Match Score.
+    2. Hệ số nhân khẩn cấp (Emergency Multiplier): Món tận dụng đồ cận hạn (<= 2 ngày)
+       được nhân 1.3 (+30% điểm ưu tiên) để đẩy lên đầu danh sách giải cứu thực phẩm.
     """
     ref_date = system_date or get_system_date()
     config = get_system_config()
@@ -426,7 +478,7 @@ def suggest_recipes(
     for it in inventory_items:
         days = calculate_days_left(it['expiration_date'], ref_date)
         if days < 0:
-            continue  # Bỏ qua đồ quá hạn
+            continue
 
         name_lower = it['food_name'].lower()
         if it['item_id'] == focus_item_id:
@@ -440,7 +492,7 @@ def suggest_recipes(
                 "food_name": it['food_name'],
                 "days_remaining": days,
                 "priority": priority,
-                "is_urgent": (priority == 'Cao'),
+                "is_urgent": (priority == 'Cao' or days <= 2),
                 "is_fefo": (priority in ('Cao', 'Trung bình')),
                 "current_quantity": it['current_quantity'],
                 "unit_name": it['unit_name']
@@ -453,24 +505,34 @@ def suggest_recipes(
         required = r['required_ingredients']
         total_required = len(required)
 
+        core_required_count = 0
+        core_ready_count = 0
         matched_high_count = 0
         matched_fefo_count = 0
         ready_count = 0
-        missing_count = 0
 
         matched_items = []
         urgent_rescue_items = []
-        missing_items = []
+        missing_core_items = []
+        missing_staples_items = []
         ingredient_statuses = []
 
         for req_ing in required:
             req_clean = req_ing.lower()
+            is_staple = is_basic_staple(req_ing)
+
+            if not is_staple:
+                core_required_count += 1
+
             matched_key = next((k for k in available_foods if k in req_clean or req_clean in k), None)
 
             if matched_key:
                 food_info = available_foods[matched_key]
                 ready_count += 1
                 matched_items.append(food_info['food_name'])
+
+                if not is_staple:
+                    core_ready_count += 1
 
                 if food_info['is_urgent']:
                     matched_high_count += 1
@@ -480,6 +542,7 @@ def suggest_recipes(
 
                 ingredient_statuses.append({
                     "ingredient_name": req_ing,
+                    "is_basic_staple": is_staple,
                     "availability": "Có sẵn - Ưu tiên cao" if food_info['is_urgent'] else "Có sẵn",
                     "matched_item_id": food_info['item_id'],
                     "matched_food_name": food_info['food_name'],
@@ -487,46 +550,251 @@ def suggest_recipes(
                     "priority": food_info['priority']
                 })
             else:
-                missing_count += 1
-                missing_items.append(req_ing)
-                ingredient_statuses.append({
-                    "ingredient_name": req_ing,
-                    "availability": "Thiếu",
-                    "matched_item_id": None
-                })
+                if is_staple:
+                    missing_staples_items.append(req_ing)
+                    ingredient_statuses.append({
+                        "ingredient_name": req_ing,
+                        "is_basic_staple": True,
+                        "availability": "Gia vị thiếu (Có thể mua hoặc bỏ qua)",
+                        "matched_item_id": None
+                    })
+                else:
+                    missing_core_items.append(req_ing)
+                    ingredient_statuses.append({
+                        "ingredient_name": req_ing,
+                        "is_basic_staple": False,
+                        "availability": "Thiếu nguyên liệu chính",
+                        "matched_item_id": None
+                    })
 
-        # Áp dụng công thức tính điểm chuẩn từ fefo-recommender.ts
-        match_score = (matched_high_count * 35) + (matched_fefo_count * 15) + (ready_count * 10) - (missing_count * 5)
+        # ---------------------------------------------------------------------
+        # TÍNH MATCH SCORE CẢI TIẾN:
+        # Base Score tính trên tỉ lệ nguyên liệu CHÍNH (không phạt gia vị cơ bản)
+        # ---------------------------------------------------------------------
+        if core_required_count > 0:
+            base_score = round((core_ready_count / core_required_count) * 100, 1)
+        else:
+            base_score = 100.0 if ready_count == total_required else 80.0
 
-        # Nếu có focus_item_id thì chỉ lấy các món có chứa nguyên liệu focus
+        # ÁP DỤNG HỆ SỐ NHÂN KHẨN CẤP (EMERGENCY MULTIPLIER 30%)
+        has_urgent_rescue = len(urgent_rescue_items) > 0
+        if has_urgent_rescue:
+            final_match_score = min(100.0, round(base_score * 1.3, 1))
+        else:
+            final_match_score = base_score
+
+        # Điểm trọng số phụ để sort (ưu tiên số món giải cứu)
+        ranking_weight = (matched_high_count * 35) + (matched_fefo_count * 15) + final_match_score
+
         if focus_food_name and not any(focus_food_name in ing.lower() or ing.lower() in focus_food_name for ing in required):
             continue
 
         results.append({
             "recipe_id": r['recipe_id'],
             "recipe_name": r['recipe_name'],
-            "match_score": match_score,
-            "score": match_score,
+            "match_score": final_match_score,
+            "base_score": base_score,
+            "emergency_multiplier_applied": has_urgent_rescue,
+            "emergency_bonus_percent": 30 if has_urgent_rescue else 0,
+            "ranking_weight": ranking_weight,
+            "score": ranking_weight,
             "total_required": total_required,
+            "core_required_count": core_required_count,
+            "core_ready_count": core_ready_count,
             "ready_count": ready_count,
-            "missing_count": missing_count,
+            "missing_core_count": len(missing_core_items),
+            "missing_staples_count": len(missing_staples_items),
             "matched_high_priority_count": matched_high_count,
             "matched_fefo_count": matched_fefo_count,
             "urgent_rescue_ingredients": urgent_rescue_items,
             "matched_ingredients": matched_items,
-            "missing_ingredients": missing_items,
+            "missing_core_ingredients": missing_core_items,
+            "missing_staples_ingredients": missing_staples_items,
+            "missing_ingredients": missing_core_items + missing_staples_items,
             "ingredient_statuses": ingredient_statuses,
-            "can_cook_now": (missing_count == 0),
+            "can_cook_now": (len(missing_core_items) == 0),
             "cooking_guide": r['cooking_guide']
         })
 
-    # Sắp xếp ưu tiên: Món cứu được đồ cận hạn cao nhất lên đầu
-    results.sort(key=lambda x: (x['matched_high_priority_count'], x['matched_fefo_count'], x['match_score']), reverse=True)
+    # Sắp xếp ưu tiên: Điểm Match Score cao -> Giải cứu được nhiều đồ cận hạn -> Ít thiếu đồ chính
+    results.sort(
+        key=lambda x: (
+            x['matched_high_priority_count'],
+            x['match_score'],
+            -x['missing_core_count'],
+            x['ranking_weight']
+        ),
+        reverse=True
+    )
     return results
 
 
 # -----------------------------------------------------------------------------
-# 5. NGHIỆP VỤ XUẤT DÙNG, ĐIỀU CHỈNH & QUẢN LÝ KHO (AUDIT TRAIL)
+# 5. THUẬT TOÁN GOM CỤM DANH SÁCH ĐI CHỢ THÔNG MINH (SMART GROUPING)
+# Phụ trách API: GET /api/shopping-list
+# -----------------------------------------------------------------------------
+
+def map_ingredient_to_aisle(food_name: str, category_name: str = "") -> Dict[str, str]:
+    """Phân loại nguyên liệu vào Quầy hàng thực tế tại chợ / siêu thị."""
+    fn = food_name.lower()
+    cn = category_name.lower()
+
+    if any(k in fn for k in ["thịt", "bò", "heo", "lợn", "gà", "vịt", "cá", "hồi", "tôm", "mực", "cua", "sườn"]) or "thịt" in cn or "hải sản" in cn:
+        return {"aisle_id": "fresh", "aisle_name": "Quầy Tươi Sống (Thịt & Hải sản)", "icon": "🥩"}
+    
+    if any(k in fn for k in ["rau", "cải", "xà lách", "cà chua", "hành", "ngò", "dưa", "nấm", "củ", "khoai", "cà rốt", "táo", "cam"]) or "rau" in cn:
+        return {"aisle_id": "veggies", "aisle_name": "Quầy Rau Củ Quả & Nấm", "icon": "🥬"}
+    
+    if any(k in fn for k in ["sữa", "trứng", "sữa chua", "bơ", "phô mai", "kem"]) or "sữa" in cn or "trứng" in cn:
+        return {"aisle_id": "dairy", "aisle_name": "Quầy Trứng, Sữa & Đồ Lạnh", "icon": "❄️"}
+    
+    if any(k in fn for k in ["mắm", "muối", "tiêu", "đường", "hạt nêm", "dầu ăn", "nước tương", "gạo", "mì", "đậu phụ", "bánh mì", "đồ hộp"]) or "gia vị" in cn:
+        return {"aisle_id": "staples", "aisle_name": "Quầy Gia Vị & Đồ Khô", "icon": "🧂"}
+    
+    return {"aisle_id": "other", "aisle_name": "Quầy Hàng Tổng Hợp", "icon": "🛒"}
+
+
+def get_smart_shopping_list(
+    focus_recipe_id: Optional[int] = None,
+    system_date: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Thuật toán gom cụm Danh sách Đi chợ thông minh:
+    1. Quét đồ cạn kiệt trong kho: current_quantity <= min_threshold hoặc hết tồn kho.
+    2. Quét nguyên liệu thiếu từ món muốn nấu (nếu focus_recipe_id được chỉ định).
+    3. Định lượng mua đề xuất = max(0, min_threshold * 2 - current_quantity) + lượng thiếu cho món.
+    4. Gom cụm theo Quầy hàng thực tế (Tươi sống, Rau củ, Gia vị & Đồ khô, Trứng & Sữa).
+    """
+    ref_date = system_date or get_system_date()
+
+    # 1. Quét kho lấy các món chạm ngưỡng hoặc hết hàng
+    inventory = query_all(
+        """
+        SELECT 
+            fi.item_id, f.food_name, c.category_name, u.unit_name,
+            fi.current_quantity, fi.min_threshold
+        FROM food_items fi
+        JOIN foods f ON fi.food_id = f.food_id
+        JOIN categories c ON f.category_id = c.category_id
+        JOIN units u ON fi.unit_id = u.unit_id
+        WHERE fi.status IN ('ACTIVE', 'Đang sử dụng')
+          AND (fi.current_quantity <= fi.min_threshold OR fi.current_quantity = 0)
+        """
+    )
+
+    items_to_buy_map: Dict[str, Dict[str, Any]] = {}
+
+    for it in inventory:
+        fn = it['food_name']
+        curr_q = float(it['current_quantity'] or 0)
+        min_th = float(it['min_threshold'] or 1.0)
+        unit = it['unit_name']
+        cat = it['category_name']
+
+        target_safe = max(min_th * 2.0, 1.0)
+        suggested_qty = round(max(0.0, target_safe - curr_q), 2)
+        if suggested_qty <= 0:
+            suggested_qty = 1.0
+
+        aisle = map_ingredient_to_aisle(fn, cat)
+
+        items_to_buy_map[fn.lower()] = {
+            "food_name": fn,
+            "category_name": cat,
+            "unit_name": unit,
+            "current_quantity": curr_q,
+            "min_threshold": min_th,
+            "needed_for_recipe": 0.0,
+            "suggested_buy_quantity": suggested_qty,
+            "reason": f"Chạm ngưỡng an toàn (còn {curr_q} {unit}, ngưỡng {min_th} {unit})",
+            "aisle": aisle,
+            "from_low_stock": True,
+            "from_recipe": False
+        }
+
+    # 2. Nếu có chọn món muốn nấu (focus_recipe_id), bổ sung nguyên liệu thiếu
+    if focus_recipe_id:
+        recipe_row = query_one(
+            "SELECT recipe_id, recipe_name, required_ingredients FROM recipes WHERE recipe_id = ?",
+            (focus_recipe_id,)
+        )
+        if recipe_row:
+            rec_name = recipe_row['recipe_name']
+            raw_ings = recipe_row['required_ingredients']
+            try:
+                ings = json.loads(raw_ings)
+            except Exception:
+                ings = [i.strip() for i in raw_ings.split(',') if i.strip()]
+
+            # Kiểm tra xem nguyên liệu nào chưa có trong tủ
+            stock_items = query_all(
+                """
+                SELECT f.food_name, fi.current_quantity, u.unit_name
+                FROM food_items fi
+                JOIN foods f ON fi.food_id = f.food_id
+                JOIN units u ON fi.unit_id = u.unit_id
+                WHERE fi.current_quantity > 0 AND fi.status IN ('ACTIVE', 'Đang sử dụng')
+                """
+            )
+            stock_dict = {s['food_name'].lower(): float(s['current_quantity']) for s in stock_items}
+
+            for ing in ings:
+                ing_lower = ing.lower()
+                has_in_stock = any(k in ing_lower or ing_lower in k for k in stock_dict)
+
+                if not has_in_stock:
+                    aisle = map_ingredient_to_aisle(ing)
+                    if ing_lower in items_to_buy_map:
+                        items_to_buy_map[ing_lower]['needed_for_recipe'] = 1.0
+                        items_to_buy_map[ing_lower]['suggested_buy_quantity'] += 1.0
+                        items_to_buy_map[ing_lower]['reason'] += f" & Thiếu để nấu '{rec_name}'"
+                        items_to_buy_map[ing_lower]['from_recipe'] = True
+                    else:
+                        items_to_buy_map[ing_lower] = {
+                            "food_name": ing,
+                            "category_name": "Theo công thức",
+                            "unit_name": "phần/kg/g",
+                            "current_quantity": 0.0,
+                            "min_threshold": 0.0,
+                            "needed_for_recipe": 1.0,
+                            "suggested_buy_quantity": 1.0,
+                            "reason": f"Nguyên liệu còn thiếu cho món '{rec_name}'",
+                            "aisle": aisle,
+                            "from_low_stock": False,
+                            "from_recipe": True
+                        }
+
+    # 3. GOM CỤM THEO QUẦY HÀNG (AISLE GROUPING)
+    aisles_dict: Dict[str, Dict[str, Any]] = {}
+    for item in items_to_buy_map.values():
+        aisle_info = item['aisle']
+        aid = aisle_info['aisle_id']
+        if aid not in aisles_dict:
+            aisles_dict[aid] = {
+                "aisle_id": aid,
+                "aisle_name": aisle_info['aisle_name'],
+                "icon": aisle_info['icon'],
+                "items": []
+            }
+        # Xóa key aisle khỏi item để JSON gọn gàng
+        item_copy = {k: v for k, v in item.items() if k != 'aisle'}
+        aisles_dict[aid]['items'].append(item_copy)
+
+    grouped_list = list(aisles_dict.values())
+
+    return {
+        "success": True,
+        "generated_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "system_date": ref_date,
+        "total_items_to_buy": len(items_to_buy_map),
+        "total_aisles": len(grouped_list),
+        "grouped_aisles": grouped_list,
+        "raw_items": list(items_to_buy_map.values())
+    }
+
+
+# -----------------------------------------------------------------------------
+# 6. NGHIỆP VỤ XUẤT DÙNG, ĐIỀU CHỈNH & QUẢN LÝ KHO (AUDIT TRAIL)
 # -----------------------------------------------------------------------------
 
 def use_food(
@@ -537,7 +805,7 @@ def use_food(
 ) -> Dict[str, Any]:
     """
     Xuất dùng thực phẩm (tương đương sp_use_food):
-    - Kiểm tra số lượng tồn kho.
+    - Kiểm tra tồn kho.
     - Cập nhật số lượng mới; nếu <= 0 thì chuyển status = 'Đã hết'.
     - Ghi nhận Audit Log vào inventory_transactions trong 1 Transaction an toàn.
     """
@@ -576,7 +844,6 @@ def use_food(
         new_qty = round(current_qty - quantity, 3)
         new_status = 'Đã hết' if new_qty <= 0 else 'Đang sử dụng'
 
-        # Cập nhật food_items
         cursor.execute(
             """
             UPDATE food_items
@@ -586,7 +853,6 @@ def use_food(
             (new_qty, new_status, item_id)
         )
 
-        # Ghi nhật ký biến động kho (Audit Trail)
         cursor.execute(
             """
             INSERT INTO inventory_transactions (
@@ -784,7 +1050,7 @@ def delete_food_item(
 
 
 # -----------------------------------------------------------------------------
-# 6. HỆ THỐNG CẢNH BÁO KÉP (ALERTS)
+# 7. HỆ THỐNG CẢNH BÁO KÉP (ALERTS)
 # -----------------------------------------------------------------------------
 
 def get_alerts(system_date: Optional[str] = None) -> Dict[str, Any]:
@@ -853,7 +1119,7 @@ def get_alerts(system_date: Optional[str] = None) -> Dict[str, Any]:
 
 
 # -----------------------------------------------------------------------------
-# 7. TRUY VẤN TỦ LẠNH (INVENTORY) & AUDIT LOG
+# 8. TRUY VẤN TỦ LẠNH (INVENTORY) & AUDIT LOG
 # -----------------------------------------------------------------------------
 
 def get_inventory(
