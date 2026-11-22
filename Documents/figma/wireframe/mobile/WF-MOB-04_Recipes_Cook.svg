@@ -61,17 +61,17 @@
     </g>
   
   <g transform="translate(16, 110)">
-    <text x="0" y="20" fill="#0F172A" font-size="16" font-weight="700">Công Thức Tận Dụng Thực Phẩm Kho</text>
-    <text x="0" y="40" fill="#64748B" font-size="12">Ưu tiên món có nguyên liệu sắp hết hạn</text>
+    <text x="0" y="20" fill="#0F172A" font-size="16" font-weight="700">Gợi Ý Món Ăn (Match Score +30%)</text>
+    <text x="0" y="40" fill="#64748B" font-size="12">Ưu tiên cận hạn (+30%), bỏ qua gia vị cơ bản</text>
 
     <g transform="translate(0, 55)">
       <rect x="0" y="0" width="358" height="145" rx="12" fill="#0F172A" stroke="#0F766E" stroke-width="1.5" />
-      <text x="16" y="28" fill="#0284C7" font-size="15" font-weight="700">BÒ XÀO RAU CẢI THÌA</text>
-      <rect x="250" y="12" width="95" height="24" rx="12" fill="#1E293B" />
-      <text x="260" y="28" fill="#059669" font-size="11" font-weight="700">Có sẵn 100%</text>
+      <text x="16" y="28" fill="#0284C7" font-size="14" font-weight="700">BÒ XÀO RAU CẢI THÌA</text>
+      <rect x="218" y="12" width="128" height="24" rx="12" fill="#1E293B" />
+      <text x="282" y="28" text-anchor="middle" fill="#059669" font-size="10" font-weight="700">100% (+30% cận hạn)</text>
 
       <text x="16" y="55" fill="#1E293B" font-size="12">Nguyên liệu: 300g Thịt bò, 250g Cải thìa, Tỏi</text>
-      <text x="16" y="75" fill="#DC2626" font-size="11" font-weight="600">⚠ Giải quyết 2 lô sắp hết hạn trong 3 ngày tới</text>
+      <text x="16" y="75" fill="#B45309" font-size="11" font-weight="600">⏳ Giải quyết 2 lô cận hạn (1–3 ngày tới)</text>
 
       <rect x="16" y="95" width="150" height="36" rx="6" fill="#1E293B" />
       <text x="32" y="118" fill="#0F172A" font-size="12" font-weight="700">Nấu món này (Trừ kho)</text>
@@ -82,9 +82,9 @@
 
     <g transform="translate(0, 215)">
       <rect x="0" y="0" width="358" height="145" rx="12" fill="#0F172A" stroke="#94A3B8" />
-      <text x="16" y="28" fill="#0F172A" font-size="15" font-weight="700">CANH CHUA CÁ LÓC NAM BỘ</text>
-      <rect x="250" y="12" width="95" height="24" rx="12" fill="#1E293B" />
-      <text x="264" y="28" fill="#B45309" font-size="11" font-weight="700">Có sẵn 80%</text>
+      <text x="16" y="28" fill="#0F172A" font-size="14" font-weight="700">CANH CHUA CÁ LÓC NAM BỘ</text>
+      <rect x="218" y="12" width="128" height="24" rx="12" fill="#1E293B" />
+      <text x="282" y="28" text-anchor="middle" fill="#B45309" font-size="10" font-weight="700">80% (trừ gia vị)</text>
 
       <text x="16" y="55" fill="#1E293B" font-size="12">Có sẵn: Cá lóc đồng, Cà chua chín</text>
       <text x="16" y="75" fill="#0284C7" font-size="11">Cần mua thêm: Giá đỗ, Dọc mùng</text>

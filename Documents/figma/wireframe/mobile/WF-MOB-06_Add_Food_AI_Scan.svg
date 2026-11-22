@@ -61,9 +61,9 @@
     </g>
   
   <g transform="translate(16, 105)">
-    <rect x="0" y="0" width="358" height="65" rx="10" fill="#F1F5F9" />
-    <text x="18" y="28" fill="#0F172A" font-size="14" font-weight="700">📷 Quét Thông Minh AI (Hóa đơn / Nhãn)</text>
-    <text x="18" y="48" fill="#CCFBF1" font-size="11">Tự động điền hạn dùng và gợi ý tên thực phẩm</text>
+    <rect x="0" y="0" width="358" height="65" rx="10" fill="#0F172A" stroke="#64748B" stroke-dasharray="4 3" />
+    <text x="18" y="28" fill="#334155" font-size="13" font-weight="700">📷 Quét AI Scan [Future Scope]</text>
+    <text x="18" y="48" fill="#64748B" font-size="11">Chưa có trong 15 REST APIs — nhập tay qua POST /api/food/add</text>
 
     <g transform="translate(0, 80)">
       <text x="0" y="16" fill="#64748B" font-size="11">TÊN THỰC PHẨM (*)</text>
@@ -84,9 +84,11 @@
         <text x="202" y="34" fill="#0F172A" font-size="14">g (Gram)</text>
       </g>
 
-      <text x="0" y="238" fill="#64748B" font-size="11">NGÀY HẾT HẠN (*)</text>
-      <rect x="0" y="246" width="358" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
-      <text x="14" y="272" fill="#0284C7" font-size="14" font-weight="700">19/11/2026 (Còn 4 ngày)</text>
+      <text x="0" y="238" fill="#64748B" font-size="11">expiration_date (*) &amp; min_threshold</text>
+      <rect x="0" y="246" width="215" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />
+      <text x="14" y="272" fill="#0284C7" font-size="13" font-weight="700">19/11/2026 (4d)</text>
+      <rect x="225" y="246" width="133" height="42" rx="6" fill="#0F172A" stroke="#4338CA" />
+      <text x="237" y="272" fill="#4338CA" font-size="13" font-weight="700">Min: 200 g</text>
 
       <text x="0" y="312" fill="#64748B" font-size="11">VỊ TRÍ LƯU TRỮ (*)</text>
       <rect x="0" y="320" width="358" height="42" rx="6" fill="#0F172A" stroke="#94A3B8" />

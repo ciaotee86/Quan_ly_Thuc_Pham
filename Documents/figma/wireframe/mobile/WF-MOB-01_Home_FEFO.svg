@@ -69,9 +69,10 @@
     <text x="32" y="107" fill="#1E293B" font-size="11" font-weight="700">Nấu ngay ➔</text>
 
     <g transform="translate(0, 150)">
-      <rect x="0" y="0" width="112" height="74" rx="10" fill="#0F172A" stroke="#94A3B8" />
-      <text x="56" y="32" text-anchor="middle" fill="#0F172A" font-size="20">📷</text>
-      <text x="56" y="56" text-anchor="middle" fill="#334155" font-size="11">Quét AI Scan</text>
+      <rect x="0" y="0" width="112" height="74" rx="10" fill="#0F172A" stroke="#64748B" stroke-dasharray="4 3" />
+      <text x="56" y="28" text-anchor="middle" fill="#64748B" font-size="18">📷</text>
+      <text x="56" y="48" text-anchor="middle" fill="#64748B" font-size="10">AI Scan</text>
+      <text x="56" y="63" text-anchor="middle" fill="#64748B" font-size="9">[Future Scope]</text>
 
       <rect x="123" y="0" width="112" height="74" rx="10" fill="#0F172A" stroke="#94A3B8" />
       <text x="179" y="32" text-anchor="middle" fill="#0F172A" font-size="20">➕</text>
@@ -83,37 +84,49 @@
     </g>
 
     <g transform="translate(0, 245)">
-      <text x="0" y="18" fill="#0F172A" font-size="15" font-weight="700">Cần Dùng Trước (Hạn Ngắn)</text>
+      <text x="0" y="18" fill="#0F172A" font-size="15" font-weight="700">Cần Dùng Trước (Quick Use 1 chạm)</text>
       <text x="358" y="18" text-anchor="end" fill="#0284C7" font-size="12">Xem tất cả</text>
 
+      <!-- Card 1 (Thumb-friendly >=44px Quick Use button) -->
       <g transform="translate(0, 30)">
-        <rect x="0" y="0" width="358" height="70" rx="10" fill="#0F172A" stroke="#EF4444" stroke-width="1" />
-        <rect x="10" y="10" width="50" height="50" rx="8" fill="#F1F5F9" />
-        <text x="24" y="42" fill="#0F172A" font-size="22">🥛</text>
-        <text x="70" y="30" fill="#0F172A" font-size="14" font-weight="700">Sữa tươi thanh trùng</text>
-        <text x="70" y="48" fill="#64748B" font-size="11">2 Hộp • Cánh tủ lạnh</text>
-        <rect x="260" y="22" width="86" height="24" rx="6" fill="#FEE2E2" />
-        <text x="270" y="38" fill="#DC2626" font-size="10" font-weight="700">Còn 1 ngày</text>
+        <rect x="0" y="0" width="358" height="92" rx="10" fill="#0F172A" stroke="#D97706" stroke-width="1.5" />
+        <rect x="10" y="10" width="44" height="44" rx="8" fill="#F1F5F9" />
+        <text x="21" y="39" fill="#0F172A" font-size="20">🥛</text>
+        <text x="64" y="27" fill="#0F172A" font-size="14" font-weight="700">Sữa tươi thanh trùng</text>
+        <text x="64" y="45" fill="#64748B" font-size="11">2 Hộp • Cánh tủ lạnh</text>
+        <rect x="252" y="12" width="96" height="24" rx="6" fill="#1E293B" />
+        <text x="260" y="28" fill="#B45309" font-size="10" font-weight="700">⏳ Còn 1 ngày</text>
+        <text x="12" y="72" fill="#64748B" font-size="11">Chạm thẻ để tùy chỉnh</text>
+        <rect x="234" y="42" width="114" height="44" rx="8" fill="#1E293B" />
+        <text x="291" y="69" text-anchor="middle" fill="#0F172A" font-size="12" font-weight="700">-1 Dùng nhanh</text>
       </g>
 
-      <g transform="translate(0, 110)">
-        <rect x="0" y="0" width="358" height="70" rx="10" fill="#0F172A" stroke="#D97706" stroke-width="1" />
-        <rect x="10" y="10" width="50" height="50" rx="8" fill="#F1F5F9" />
-        <text x="24" y="42" fill="#0F172A" font-size="22">🥩</text>
-        <text x="70" y="30" fill="#0F172A" font-size="14" font-weight="700">Thịt bò phi lê</text>
-        <text x="70" y="48" fill="#64748B" font-size="11">500 g • Ngăn mát tủ lạnh</text>
-        <rect x="260" y="22" width="86" height="24" rx="6" fill="#1E293B" />
-        <text x="270" y="38" fill="#B45309" font-size="10" font-weight="700">Còn 2 ngày</text>
+      <!-- Card 2 -->
+      <g transform="translate(0, 132)">
+        <rect x="0" y="0" width="358" height="92" rx="10" fill="#0F172A" stroke="#D97706" stroke-width="1" />
+        <rect x="10" y="10" width="44" height="44" rx="8" fill="#F1F5F9" />
+        <text x="21" y="39" fill="#0F172A" font-size="20">🥩</text>
+        <text x="64" y="27" fill="#0F172A" font-size="14" font-weight="700">Thịt bò phi lê</text>
+        <text x="64" y="45" fill="#64748B" font-size="11">500 g • Ngăn mát tủ lạnh</text>
+        <rect x="252" y="12" width="96" height="24" rx="6" fill="#1E293B" />
+        <text x="260" y="28" fill="#B45309" font-size="10" font-weight="700">⏳ Còn 2 ngày</text>
+        <text x="12" y="72" fill="#64748B" font-size="11">Chạm thẻ để tùy chỉnh</text>
+        <rect x="234" y="42" width="114" height="44" rx="8" fill="#1E293B" />
+        <text x="291" y="69" text-anchor="middle" fill="#0F172A" font-size="12" font-weight="700">-1 Dùng nhanh</text>
       </g>
 
-      <g transform="translate(0, 190)">
-        <rect x="0" y="0" width="358" height="70" rx="10" fill="#0F172A" stroke="#94A3B8" />
-        <rect x="10" y="10" width="50" height="50" rx="8" fill="#F1F5F9" />
-        <text x="24" y="42" fill="#0F172A" font-size="22">🥬</text>
-        <text x="70" y="30" fill="#0F172A" font-size="14" font-weight="700">Rau cải thìa</text>
-        <text x="70" y="48" fill="#64748B" font-size="11">300 g • Hộc rau củ</text>
-        <rect x="260" y="22" width="86" height="24" rx="6" fill="#334155" />
-        <text x="272" y="38" fill="#334155" font-size="10" font-weight="600">Còn 3 ngày</text>
+      <!-- Card 3 -->
+      <g transform="translate(0, 234)">
+        <rect x="0" y="0" width="358" height="92" rx="10" fill="#0F172A" stroke="#D97706" stroke-width="1" />
+        <rect x="10" y="10" width="44" height="44" rx="8" fill="#F1F5F9" />
+        <text x="21" y="39" fill="#0F172A" font-size="20">🥬</text>
+        <text x="64" y="27" fill="#0F172A" font-size="14" font-weight="700">Rau cải thìa</text>
+        <text x="64" y="45" fill="#64748B" font-size="11">300 g • Hộc rau củ</text>
+        <rect x="252" y="12" width="96" height="24" rx="6" fill="#1E293B" />
+        <text x="260" y="28" fill="#B45309" font-size="10" font-weight="700">⏳ Còn 3 ngày</text>
+        <text x="12" y="72" fill="#64748B" font-size="11">Chạm thẻ để tùy chỉnh</text>
+        <rect x="234" y="42" width="114" height="44" rx="8" fill="#1E293B" />
+        <text x="291" y="69" text-anchor="middle" fill="#0F172A" font-size="12" font-weight="700">-1 Dùng nhanh</text>
       </g>
     </g>
   </g>

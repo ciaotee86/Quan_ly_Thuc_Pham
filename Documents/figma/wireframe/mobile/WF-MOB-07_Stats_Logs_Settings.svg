@@ -64,8 +64,8 @@
     <rect x="0" y="0" width="358" height="95" rx="10" fill="#0F172A" stroke="#0F766E" />
     <circle cx="24" cy="28" r="6" fill="#1E293B" />
     <text x="38" y="32" fill="#0F172A" font-size="14" font-weight="700">Đã Kết Nối Desktop Server</text>
-    <text x="18" y="56" fill="#64748B" font-size="12">Địa chỉ: 192.168.1.100 • Ghép đôi: 123456</text>
-    <text x="18" y="78" fill="#0284C7" font-size="11">Chế độ đồng bộ: Tự động qua BroadcastChannel RPC</text>
+    <text x="18" y="56" fill="#64748B" font-size="12">Địa chỉ: http://192.168.1.100:8080 (TCP Port 8080)</text>
+    <text x="18" y="78" fill="#0284C7" font-size="11">Giao thức: HTTP/1.1 + REST JSON + SSE (/api/events)</text>
 
     <g transform="translate(0, 110)">
       <rect x="0" y="0" width="358" height="130" rx="10" fill="#0F172A" stroke="#94A3B8" />
@@ -74,14 +74,14 @@
       <g transform="translate(18, 45)">
         <text x="0" y="20" fill="#64748B" font-size="12">Đã sử dụng:</text><text x="322" y="20" text-anchor="end" fill="#1E293B" font-size="13" font-weight="700">8 mặt hàng (4.2 kg)</text>
         <text x="0" y="48" fill="#64748B" font-size="12">Lãng phí / Vứt hủy:</text><text x="322" y="48" text-anchor="end" fill="#0284C7" font-size="13" font-weight="700">0 mặt hàng (0%)</text>
-        <text x="0" y="74" fill="#64748B" font-size="12">Tiết kiệm nhờ FEFO:</text><text x="322" y="74" text-anchor="end" fill="#1E293B" font-size="13" font-weight="700">~ 285.000 đ</text>
+        <text x="0" y="74" fill="#64748B" font-size="12">Lô đang theo dõi (food_items):</text><text x="322" y="74" text-anchor="end" fill="#4338CA" font-size="13" font-weight="700">16 lô / 15 món</text>
       </g>
     </g>
 
     <g transform="translate(0, 255)">
       <rect x="0" y="0" width="358" height="50" rx="8" fill="#0F172A" /><text x="18" y="31" fill="#1E293B" font-size="13">📂 Xem Nhật Ký Giao Dịch Gần Đây</text><text x="335" y="31" fill="#64748B" font-size="14">➔</text>
       <rect x="0" y="60" width="358" height="50" rx="8" fill="#0F172A" /><text x="18" y="91" fill="#1E293B" font-size="13">🔔 Cài Đặt Thông Báo Hạn Dùng</text><text x="335" y="91" fill="#64748B" font-size="14">➔</text>
-      <rect x="0" y="120" width="358" height="50" rx="8" fill="#0F172A" /><text x="18" y="151" fill="#1E293B" font-size="13">📶 Chế Độ Ngoại Tuyến (Offline Read-Only)</text><text x="315" y="151" fill="#1E293B" font-size="12">BẬT</text>
+      <rect x="0" y="120" width="358" height="50" rx="8" fill="#0F172A" stroke="#64748B" stroke-dasharray="4 3" /><text x="18" y="151" fill="#64748B" font-size="12">📶 Chế Độ Offline [Future Scope]</text><text x="342" y="151" text-anchor="end" fill="#64748B" font-size="11">Chờ</text>
       <rect x="0" y="180" width="358" height="50" rx="8" fill="#FEE2E2" opacity="0.3" stroke="#EF4444" /><text x="18" y="211" fill="#DC2626" font-size="13">✕ Ngắt Kết Nối Với Server</text>
     </g>
   </g>

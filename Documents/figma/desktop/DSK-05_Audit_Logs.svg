@@ -21,9 +21,9 @@
     <circle cx="42" cy="22" r="6" fill="#F59E0B" />
     <circle cx="60" cy="22" r="6" fill="#10B981" />
     <text x="84" y="27" fill="#64748B" font-size="13" font-weight="500">QUẢN LÝ THỰC PHẨM GIA ĐÌNH &amp; ĐỀ XUẤT FEFO — SERVER WORKBENCH (Desktop App)</text>
-    <rect x="1260" y="10" width="160" height="24" rx="12" fill="#1E293B" />
-    <circle cx="1275" cy="22" r="4" fill="#10B981" />
-    <text x="1288" y="26" fill="#10B981" font-size="12" font-weight="600">Port 5173 • Online</text>
+    <rect x="1245" y="10" width="175" height="24" rx="12" fill="#1E293B" />
+    <circle cx="1260" cy="22" r="4" fill="#10B981" />
+    <text x="1273" y="26" fill="#10B981" font-size="12" font-weight="600">TCP Port 8080 • Online</text>
 
     <!-- Top App Navigation Bar -->
     <rect x="0" y="44" width="1440" height="52" fill="#0F172A" />
@@ -107,8 +107,8 @@
       <rect x="0" y="0" width="228" height="80" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
       <circle cx="20" cy="24" r="6" fill="#10B981" />
       <text x="36" y="28" fill="#E2E8F0" font-size="13" font-weight="600">Dịch vụ nền Desktop</text>
-      <text x="36" y="48" fill="#94A3B8" font-size="11">Giao thức: Simulated RPC</text>
-      <text x="36" y="66" fill="#38BDF8" font-size="11">PIN ghép đôi: 123456</text>
+      <text x="36" y="48" fill="#94A3B8" font-size="11">HTTP/1.1 + REST JSON + SSE</text>
+      <text x="36" y="66" fill="#38BDF8" font-size="11">TCP :8080 • /api/events</text>
     </g>
 
     <!-- Content Area Background -->
@@ -116,36 +116,36 @@
   
   <g id="Content_DSK-05" transform="translate(284, 116)">
     <text x="0" y="24" fill="#F8FAFC" font-size="22" font-weight="700">Sổ Kho &amp; Nhật Ký Biến Động Tồn Kho (Audit Logs)</text>
-    <text x="0" y="48" fill="#94A3B8" font-size="13">Lưu trữ bất biến toàn bộ giao dịch sp_use_food và thay đổi trạng thái</text>
+    <text x="0" y="48" fill="#94A3B8" font-size="13">Lưu trữ bất biến toàn bộ giao dịch bảng inventory_transactions (SQLite WAL + RLock)</text>
 
     <g transform="translate(0, 70)">
       <rect x="0" y="0" width="1130" height="600" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" />
       
       <rect x="16" y="16" width="1098" height="36" rx="6" fill="#334155" />
-      <text x="32" y="39" fill="#CBD5E1" font-size="12" font-weight="600">MÃ GD</text>
-      <text x="140" y="39" fill="#CBD5E1" font-size="12" font-weight="600">THỜI GIAN</text>
-      <text x="280" y="39" fill="#CBD5E1" font-size="12" font-weight="600">LOẠI BIẾN ĐỘNG</text>
-      <text x="440" y="39" fill="#CBD5E1" font-size="12" font-weight="600">THỰC PHẨM</text>
-      <text x="620" y="39" fill="#CBD5E1" font-size="12" font-weight="600">SỐ LƯỢNG THAY ĐỔI</text>
-      <text x="800" y="39" fill="#CBD5E1" font-size="12" font-weight="600">TÁC NHÂN</text>
-      <text x="960" y="39" fill="#CBD5E1" font-size="12" font-weight="600">LÝ DO GHI CHÚ</text>
+      <text x="32" y="39" fill="#CBD5E1" font-size="12" font-weight="600">transaction_id</text>
+      <text x="145" y="39" fill="#CBD5E1" font-size="12" font-weight="600">transaction_time</text>
+      <text x="290" y="39" fill="#CBD5E1" font-size="12" font-weight="600">action_type</text>
+      <text x="435" y="39" fill="#CBD5E1" font-size="12" font-weight="600">food_name (item_id)</text>
+      <text x="630" y="39" fill="#CBD5E1" font-size="12" font-weight="600">change_quantity</text>
+      <text x="790" y="39" fill="#CBD5E1" font-size="12" font-weight="600">remaining_quantity</text>
+      <text x="960" y="39" fill="#CBD5E1" font-size="12" font-weight="600">reason</text>
 
       <rect x="16" y="60" width="1098" height="46" rx="4" fill="#0F172A" />
-      <text x="32" y="88" fill="#38BDF8" font-size="13" font-weight="600">TXN-015</text>
-      <text x="140" y="88" fill="#94A3B8" font-size="13">15/11/2026 21:15</text>
-      <rect x="280" y="72" width="80" height="22" rx="4" fill="#78350F" /><text x="290" y="87" fill="#FCD34D" font-size="11" font-weight="700">SỬ DỤNG</text>
-      <text x="440" y="88" fill="#FFF" font-size="13">Thịt bò phi lê (LOT-003)</text>
-      <text x="620" y="88" fill="#EF4444" font-size="13" font-weight="700">- 200 g</text>
-      <text x="800" y="88" fill="#38BDF8" font-size="13">Mobile_Client_1</text>
+      <text x="32" y="88" fill="#38BDF8" font-size="13" font-weight="600">#15</text>
+      <text x="145" y="88" fill="#94A3B8" font-size="13">15/11/2026 21:15</text>
+      <rect x="290" y="72" width="80" height="22" rx="4" fill="#78350F" /><text x="300" y="87" fill="#FCD34D" font-size="11" font-weight="700">SỬ DỤNG</text>
+      <text x="435" y="88" fill="#FFF" font-size="13">Thịt bò phi lê (#3)</text>
+      <text x="630" y="88" fill="#EF4444" font-size="13" font-weight="700">- 200 g</text>
+      <text x="790" y="88" fill="#CBD5E1" font-size="13">300 g</text>
       <text x="960" y="88" fill="#94A3B8" font-size="13">Nấu bữa tối</text>
 
       <rect x="16" y="112" width="1098" height="46" rx="4" fill="#1E293B" />
-      <text x="32" y="140" fill="#38BDF8" font-size="13" font-weight="600">TXN-014</text>
-      <text x="140" y="140" fill="#94A3B8" font-size="13">15/11/2026 14:02</text>
-      <rect x="280" y="124" width="90" height="22" rx="4" fill="#064E3B" /><text x="290" y="139" fill="#6EE7B7" font-size="11" font-weight="700">NHẬP THÊM</text>
-      <text x="440" y="140" fill="#FFF" font-size="13">Trứng gà ta (LOT-008)</text>
-      <text x="620" y="140" fill="#10B981" font-size="13" font-weight="700">+ 10 quả</text>
-      <text x="800" y="140" fill="#E2E8F0" font-size="13">Desktop_Admin</text>
+      <text x="32" y="140" fill="#38BDF8" font-size="13" font-weight="600">#14</text>
+      <text x="145" y="140" fill="#94A3B8" font-size="13">15/11/2026 14:02</text>
+      <rect x="290" y="124" width="90" height="22" rx="4" fill="#064E3B" /><text x="300" y="139" fill="#6EE7B7" font-size="11" font-weight="700">NHẬP THÊM</text>
+      <text x="435" y="140" fill="#FFF" font-size="13">Trứng gà ta (#8)</text>
+      <text x="630" y="140" fill="#10B981" font-size="13" font-weight="700">+ 10 quả</text>
+      <text x="790" y="140" fill="#CBD5E1" font-size="13">10 quả</text>
       <text x="960" y="140" fill="#94A3B8" font-size="13">Đi siêu thị WinMart</text>
     </g>
   </g>

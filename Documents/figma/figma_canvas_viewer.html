@@ -28,21 +28,24 @@
       overflow: hidden;
     }
     header {
-      height: 56px;
+      min-height: 56px;
       background: var(--bg-panel);
       border-bottom: 1px solid var(--border);
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      gap: 8px 16px;
+      padding: 8px 16px;
       z-index: 10;
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px;
-      font-size: 15px;
+      gap: 10px;
+      font-size: 14px;
       font-weight: 700;
+      min-width: 0;
     }
     .figma-badge {
       background: linear-gradient(135deg, #F24E1E, #A259FF, #1ABCFE, #0ACF83);
@@ -52,11 +55,13 @@
       padding: 3px 8px;
       border-radius: 4px;
       letter-spacing: 0.5px;
+      flex-shrink: 0;
     }
     .header-actions {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
     .tab-switch {
       display: flex;
@@ -107,10 +112,13 @@
     .main-body {
       display: flex;
       flex: 1;
-      height: calc(100vh - 56px);
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
     }
     sidebar {
-      width: 330px;
+      width: 310px;
+      flex-shrink: 0;
       background: #0B132B;
       border-right: 1px solid var(--border);
       overflow-y: auto;
@@ -157,6 +165,8 @@
 
     .canvas-container {
       flex: 1;
+      min-width: 0;
+      min-height: 0;
       background: #090D16;
       background-image: radial-gradient(#1E293B 1px, transparent 1px);
       background-size: 24px 24px;
@@ -167,36 +177,42 @@
     }
     .canvas-toolbar {
       position: absolute;
-      top: 16px;
-      right: 20px;
-      background: var(--bg-panel);
+      top: 12px;
+      right: 16px;
+      max-width: calc(100% - 32px);
+      background: rgba(30, 41, 59, 0.94);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       border-radius: 8px;
       padding: 6px 10px;
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       z-index: 5;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
     .viewport-box {
       flex: 1;
+      min-width: 0;
+      min-height: 0;
       overflow: auto;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px;
+      padding: 68px 28px 28px;
     }
     .artboard-stage {
-      transition: transform 0.15s ease;
+      flex-shrink: 0;
+      margin: auto;
       box-shadow: 0 10px 40px rgba(0,0,0,0.5);
       border-radius: 8px;
       overflow: hidden;
-      display: inline-block;
+      display: block;
       line-height: 0;
     }
-    .artboard-stage svg {
+    .artboard-stage svg,
+    .artboard-stage img {
       display: block;
+      max-width: none;
     }
     .toast {
       position: fixed;
@@ -225,10 +241,10 @@
     <div class="header-actions">
       <div class="tab-switch">
         <button id="btnTabHifi" class="tab-btn active" onclick="switchSuiteMode('hifi')">
-          🎨 Giao Diện Dự Kiến (17)
+          🎨 Giao Diện Dự Kiến (18)
         </button>
         <button id="btnTabWf" class="tab-btn" onclick="switchSuiteMode('wireframe')">
-          📐 Phác Thảo Wireframe (17)
+          📐 Phác Thảo Wireframe (18)
         </button>
       </div>
 
@@ -240,8 +256,8 @@
         ⬇ Tải file SVG về máy
       </button>
 
-      <a class="btn btn-accent" href="http://localhost:5173" target="_blank" title="Mở ứng dụng prototype thật">
-        🖥️ Mở App Web (5173)
+      <a class="btn btn-accent" href="http://localhost:8080/api/status" target="_blank" title="Kiểm tra trạng thái TCP Server :8080">
+        🖥️ Kiểm Tra Server (:8080)
       </a>
     </div>
   </header>
@@ -253,12 +269,13 @@
 
     <div class="canvas-container">
       <div class="canvas-toolbar">
-        <button class="btn" onclick="zoom(-0.1)">🔍 −</button>
-        <span id="zoomLabel" style="font-size:12px;color:#CBD5E1;min-width:44px;text-align:center;">22%</span>
-        <button class="btn" onclick="zoom(0.1)">🔍 ＋</button>
+        <button class="btn" onclick="zoom(-0.05)">🔍 −</button>
+        <span id="zoomLabel" style="font-size:12px;color:#CBD5E1;min-width:44px;text-align:center;">100%</span>
+        <button class="btn" onclick="zoom(0.05)">🔍 ＋</button>
+        <button class="btn" onclick="fitToViewport()">Vừa khung</button>
         <button class="btn" onclick="resetZoom()">100%</button>
         <span style="color:#64748B;">|</span>
-        <span id="currentFrameMeta" style="font-size:12px;color:#38BDF8;font-weight:600;">Master Board (6400 × 3600 px)</span>
+        <span id="currentFrameMeta" style="font-size:12px;color:#38BDF8;font-weight:600;">Master Board (6400 × 4400 px)</span>
       </div>
 
       <div class="viewport-box" id="viewportBox">
@@ -275,10 +292,12 @@
     let currentSuiteMode = 'hifi'; // 'hifi' or 'wireframe'
     let currentSvgPath = 'master/00_FIGMA_MASTER_BOARD_ALL_SCREENS.svg';
     let currentScale = 0.22;
+    let currentWidth = 6400;
+    let currentHeight = 4400;
 
     const HIFI_LIST = {
       master: [
-        { path: 'master/00_FIGMA_MASTER_BOARD_ALL_SCREENS.svg', title: '00. Master Board Toàn Bộ Màn Hình', dim: '6400x3600', badge: 'Canvas Lớn' }
+        { path: 'master/00_FIGMA_MASTER_BOARD_ALL_SCREENS.svg', title: '00. Master Board Toàn Bộ Màn Hình', dim: '6400x4400', badge: 'Canvas Lớn' }
       ],
       desktop: [
         { path: 'desktop/DSK-01_Dashboard_Server.svg', title: 'DSK-01: Dashboard Tổng Quan', dim: '1440x900', badge: '1440×900' },
@@ -287,24 +306,25 @@
         { path: 'desktop/DSK-04_Alerts_Center.svg', title: 'DSK-04: Trung Tâm Cảnh Báo', dim: '1440x900', badge: '1440×900' },
         { path: 'desktop/DSK-05_Audit_Logs.svg', title: 'DSK-05: Nhật Ký Kiểm Toán (Sổ Kho)', dim: '1440x900', badge: '1440×900' },
         { path: 'desktop/DSK-06_Catalog_Management.svg', title: 'DSK-06: Quản Lý Danh Mục', dim: '1440x900', badge: '1440×900' },
-        { path: 'desktop/DSK-07_Settings_Configuration.svg', title: 'DSK-07: Cấu Hình Máy Chủ & PIN', dim: '1440x900', badge: '1440×900' },
-        { path: 'desktop/DSK-MODALS_Suite.svg', title: 'DSK-MODALS: Bộ 6 Hộp Thoại', dim: '1440x900', badge: 'Modals' }
+        { path: 'desktop/DSK-07_Settings_Configuration.svg', title: 'DSK-07: Cấu Hình Máy Chủ (:8080)', dim: '1440x900', badge: '1440×900' },
+        { path: 'desktop/DSK-MODALS_Suite.svg', title: 'DSK-MODALS: Bộ 6 Hộp Thoại', dim: '1440x900', badge: 'Modals' },
+        { path: 'desktop/EMPTY-STATES_Suite.svg', title: 'EMPTY-STATES: 3 Trạng Thái Rỗng', dim: '1440x900', badge: 'QT-04' }
       ],
       mobile: [
-        { path: 'mobile/MOB-00_Connect_PIN.svg', title: 'MOB-00: Kết Nối Server & PIN', dim: '390x844', badge: '390×844' },
+        { path: 'mobile/MOB-00_Connect_PIN.svg', title: 'MOB-00: Kết Nối Server LAN (:8080)', dim: '390x844', badge: '390×844' },
         { path: 'mobile/MOB-01_Home_FEFO.svg', title: 'MOB-01: Trang Chủ FEFO Nhanh', dim: '390x844', badge: '390×844' },
         { path: 'mobile/MOB-02_Inventory_Search_Filter.svg', title: 'MOB-02: Tủ Lạnh & Bộ Lọc', dim: '390x844', badge: '390×844' },
         { path: 'mobile/MOB-03_Food_Detail_Actions.svg', title: 'MOB-03: Chi Tiết & Dùng Kho', dim: '390x844', badge: '390×844' },
         { path: 'mobile/MOB-04_Recipes_Cook.svg', title: 'MOB-04: Gợi Ý Món Ăn Gia Đình', dim: '390x844', badge: '390×844' },
         { path: 'mobile/MOB-05_Alerts_Shopping_List.svg', title: 'MOB-05: Cảnh Báo & Mua Sắm', dim: '390x844', badge: '390×844' },
-        { path: 'mobile/MOB-06_Add_Food_AI_Scan.svg', title: 'MOB-06: Thêm Thực Phẩm & AI Scan', dim: '390x844', badge: '390×844' },
+        { path: 'mobile/MOB-06_Add_Food_AI_Scan.svg', title: 'MOB-06: Thêm Thực Phẩm & AI [Future Scope]', dim: '390x844', badge: '390×844' },
         { path: 'mobile/MOB-07_Stats_Logs_Settings.svg', title: 'MOB-07: Cài Đặt & Thống Kê', dim: '390x844', badge: '390×844' }
       ]
     };
 
     const WIREFRAME_LIST = {
       master: [
-        { path: 'wireframe/master/00_FIGMA_MASTER_BOARD_WIREFRAMES.svg', title: '00. Master Board Khung Dây Wireframe', dim: '6400x3600', badge: 'Blueprint' }
+        { path: 'wireframe/master/00_FIGMA_MASTER_BOARD_WIREFRAMES.svg', title: '00. Master Board Khung Dây Wireframe', dim: '6400x4400', badge: 'Blueprint' }
       ],
       desktop: [
         { path: 'wireframe/desktop/WF-DSK-01_Dashboard_Server.svg', title: 'WF-01: Dashboard Server (Khung dây)', dim: '1440x900', badge: 'Wireframe' },
@@ -314,16 +334,17 @@
         { path: 'wireframe/desktop/WF-DSK-05_Audit_Logs.svg', title: 'WF-05: Nhật Ký Kiểm Toán (Khung dây)', dim: '1440x900', badge: 'Wireframe' },
         { path: 'wireframe/desktop/WF-DSK-06_Catalog_Management.svg', title: 'WF-06: Quản Lý Danh Mục (Khung dây)', dim: '1440x900', badge: 'Wireframe' },
         { path: 'wireframe/desktop/WF-DSK-07_Settings_Configuration.svg', title: 'WF-07: Cấu Hình Máy Chủ (Khung dây)', dim: '1440x900', badge: 'Wireframe' },
-        { path: 'wireframe/desktop/WF-DSK-MODALS_Suite.svg', title: 'WF-08: Bộ 6 Hộp Thoại (Khung dây)', dim: '1440x900', badge: 'Wireframe' }
+        { path: 'wireframe/desktop/WF-DSK-MODALS_Suite.svg', title: 'WF-08: Bộ 6 Hộp Thoại (Khung dây)', dim: '1440x900', badge: 'Wireframe' },
+        { path: 'wireframe/desktop/WF-EMPTY-STATES_Suite.svg', title: 'WF-EMPTY: 3 Trạng Thái Rỗng (Khung dây)', dim: '1440x900', badge: 'Wireframe' }
       ],
       mobile: [
-        { path: 'wireframe/mobile/WF-MOB-00_Connect_PIN.svg', title: 'WF-M00: Kết Nối Server & PIN (Khung dây)', dim: '390x844', badge: 'Wireframe' },
+        { path: 'wireframe/mobile/WF-MOB-00_Connect_PIN.svg', title: 'WF-M00: Kết Nối Server LAN (:8080) (Khung dây)', dim: '390x844', badge: 'Wireframe' },
         { path: 'wireframe/mobile/WF-MOB-01_Home_FEFO.svg', title: 'WF-M01: Trang Chủ FEFO (Khung dây)', dim: '390x844', badge: 'Wireframe' },
         { path: 'wireframe/mobile/WF-MOB-02_Inventory_Search_Filter.svg', title: 'WF-M02: Tủ Lạnh & Bộ Lọc (Khung dây)', dim: '390x844', badge: 'Wireframe' },
         { path: 'wireframe/mobile/WF-MOB-03_Food_Detail_Actions.svg', title: 'WF-M03: Chi Tiết & Dùng Kho (Khung dây)', dim: '390x844', badge: 'Wireframe' },
         { path: 'wireframe/mobile/WF-MOB-04_Recipes_Cook.svg', title: 'WF-M04: Gợi Ý Món Ăn (Khung dây)', dim: '390x844', badge: 'Wireframe' },
         { path: 'wireframe/mobile/WF-MOB-05_Alerts_Shopping_List.svg', title: 'WF-M05: Cảnh Báo & Mua Sắm (Khung dây)', dim: '390x844', badge: 'Wireframe' },
-        { path: 'wireframe/mobile/WF-MOB-06_Add_Food_AI_Scan.svg', title: 'WF-M06: Thêm Thực Phẩm (Khung dây)', dim: '390x844', badge: 'Wireframe' },
+        { path: 'wireframe/mobile/WF-MOB-06_Add_Food_AI_Scan.svg', title: 'WF-M06: Thêm Thực Phẩm & AI [Future Scope]', dim: '390x844', badge: 'Wireframe' },
         { path: 'wireframe/mobile/WF-MOB-07_Stats_Logs_Settings.svg', title: 'WF-M07: Cài Đặt & Thống Kê (Khung dây)', dim: '390x844', badge: 'Wireframe' }
       ]
     };
@@ -376,10 +397,10 @@
 
       if (mode === 'hifi') {
         currentSvgPath = 'master/00_FIGMA_MASTER_BOARD_ALL_SCREENS.svg';
-        loadFrame(currentSvgPath, 'Master Board: Toàn Bộ Màn Hình (Hi-Fi)', '6400x3600');
+        loadFrame(currentSvgPath, 'Master Board: Toàn Bộ Màn Hình (Hi-Fi)', '6400x4400');
       } else {
         currentSvgPath = 'wireframe/master/00_FIGMA_MASTER_BOARD_WIREFRAMES.svg';
-        loadFrame(currentSvgPath, 'Master Board: Phác Thảo Khung Dây (Wireframe)', '6400x3600');
+        loadFrame(currentSvgPath, 'Master Board: Phác Thảo Khung Dây (Wireframe)', '6400x4400');
       }
       renderSidebar();
     }
@@ -387,8 +408,11 @@
     function loadFrame(svgPath, title, dim) {
       currentSvgPath = svgPath;
       const stage = document.getElementById('artboardStage');
+      const parts = String(dim || '1440x900').split('x').map(Number);
+      currentWidth = parts[0] || 1440;
+      currentHeight = parts[1] || 900;
 
-      document.getElementById('currentFrameMeta').innerText = title + ' (' + dim + ' px)';
+      document.getElementById('currentFrameMeta').textContent = title + ' (' + dim + ' px)';
 
       // Update sidebar active class
       document.querySelectorAll('.frame-item').forEach(el => el.classList.remove('active'));
@@ -403,18 +427,20 @@
         stage.innerHTML = `<img src="${svgPath}" alt="Figma Frame Preview" style="display:block;max-width:none;" onerror="this.parentElement.innerHTML='<div style=\\\'padding:40px;color:#F87171;text-align:center;\\\'>Không thể tải: ${svgPath}</div>';" />`;
       }
 
-      if (dim === '6400x3600') {
-        currentScale = 0.22;
-      } else if (dim === '1440x900') {
-        currentScale = 0.82;
-      } else {
-        currentScale = 1.0;
-      }
+      fitToViewport();
+    }
+
+    function fitToViewport() {
+      const box = document.getElementById('viewportBox');
+      const availW = Math.max(320, (box?.clientWidth || 1000) - 72);
+      const availH = Math.max(240, (box?.clientHeight || 700) - 104);
+      const fitScale = Math.min(availW / currentWidth, availH / currentHeight, 1.0);
+      currentScale = Math.max(0.08, Math.round(fitScale * 100) / 100);
       applyZoom();
     }
 
     function zoom(delta) {
-      currentScale = Math.max(0.1, Math.min(3.0, currentScale + delta));
+      currentScale = Math.max(0.08, Math.min(3.0, Math.round((currentScale + delta) * 100) / 100));
       applyZoom();
     }
 
@@ -424,8 +450,19 @@
     }
 
     function applyZoom() {
-      document.getElementById('artboardStage').style.transform = `scale(${currentScale})`;
-      document.getElementById('zoomLabel').innerText = Math.round(currentScale * 100) + '%';
+      const stage = document.getElementById('artboardStage');
+      const scaledW = Math.max(1, Math.round(currentWidth * currentScale));
+      const scaledH = Math.max(1, Math.round(currentHeight * currentScale));
+      stage.style.width = scaledW + 'px';
+      stage.style.height = scaledH + 'px';
+      const el = stage.querySelector('svg, img');
+      if (el) {
+        el.setAttribute('width', String(scaledW));
+        el.setAttribute('height', String(scaledH));
+        el.style.width = scaledW + 'px';
+        el.style.height = scaledH + 'px';
+      }
+      document.getElementById('zoomLabel').textContent = Math.round(currentScale * 100) + '%';
     }
 
     async function copySvgToClipboard() {
@@ -482,14 +519,14 @@
 
     function showToast(msg) {
       const t = document.getElementById('toast');
-      t.innerText = msg;
+      t.textContent = msg;
       t.style.display = 'block';
       setTimeout(() => { t.style.display = 'none'; }, 4000);
     }
 
     // Initialize
     renderSidebar();
-    loadFrame(currentSvgPath, 'Master Board Toàn Bộ Màn Hình (Hi-Fi)', '6400x3600');
+    loadFrame(currentSvgPath, 'Master Board Toàn Bộ Màn Hình (Hi-Fi)', '6400x4400');
   </script>
 </body>
 </html>
