@@ -5,5 +5,5 @@ echo ======================================================================
 echo    KHOI DONG MAY CHU TCP SOCKET THUAN & CSDL SQLITE (PORT 8080)
 echo ======================================================================
 cd /d "%~dp0"
-python server/database.py
+python server/tcp_server.py
 pause
