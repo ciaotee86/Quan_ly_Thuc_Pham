@@ -42,7 +42,7 @@ async function verifyFigmaViewer() {
 
   let frameItems = await page.$$('.frame-item');
   console.log(`Found ${frameItems.length} Hi-Fi items.`);
-  assert.equal(frameItems.length, 17, 'Should have 17 Hi-Fi items');
+  assert.equal(frameItems.length, 18, 'Should have 18 Hi-Fi items (17 screens + Empty States suite)');
 
   for (let i = 0; i < frameItems.length; i++) {
     const item = frameItems[i];
@@ -61,10 +61,10 @@ async function verifyFigmaViewer() {
     });
 
     if (check.ok) {
-      console.log(`  ✅ [${i + 1}/17] PASS: ${itemText} (${check.width}x${check.height})`);
+      console.log(`  ✅ [${i + 1}/18] PASS: ${itemText} (${check.width}x${check.height})`);
       passedTotal++;
     } else {
-      console.error(`  ❌ [${i + 1}/17] FAIL: ${itemText} -> ${check.error}`);
+      console.error(`  ❌ [${i + 1}/18] FAIL: ${itemText} -> ${check.error}`);
     }
   }
 
@@ -75,7 +75,7 @@ async function verifyFigmaViewer() {
 
   frameItems = await page.$$('.frame-item');
   console.log(`Found ${frameItems.length} Wireframe items.`);
-  assert.equal(frameItems.length, 17, 'Should have 17 Wireframe items');
+  assert.equal(frameItems.length, 18, 'Should have 18 Wireframe items (17 screens + Empty States suite)');
 
   for (let i = 0; i < frameItems.length; i++) {
     const item = frameItems[i];
@@ -94,10 +94,10 @@ async function verifyFigmaViewer() {
     });
 
     if (check.ok) {
-      console.log(`  ✅ [${i + 1}/17] PASS: ${itemText} (${check.width}x${check.height})`);
+      console.log(`  ✅ [${i + 1}/18] PASS: ${itemText} (${check.width}x${check.height})`);
       passedTotal++;
     } else {
-      console.error(`  ❌ [${i + 1}/17] FAIL: ${itemText} -> ${check.error}`);
+      console.error(`  ❌ [${i + 1}/18] FAIL: ${itemText} -> ${check.error}`);
     }
   }
 
@@ -111,10 +111,10 @@ async function verifyFigmaViewer() {
   await browser.close();
 
   console.log(`\n========================================`);
-  console.log(`RESULT: ${passedTotal}/34 frames (17 Hi-Fi + 17 Wireframe) verified successfully!`);
+  console.log(`RESULT: ${passedTotal}/36 frames (18 Hi-Fi + 18 Wireframe) verified successfully!`);
   console.log(`========================================\n`);
 
-  if (passedTotal === 34) {
+  if (passedTotal === 36) {
     process.exit(0);
   } else {
     process.exit(1);
