@@ -1,0 +1,73 @@
+<mxfile host="app.diagrams.net" modified="2026-11-22T18:05:00.000Z" agent="Antigravity" version="24.7.17">
+  <diagram id="user-journey-realtime-sse" name="User Journey Realtime SSE">
+    <mxGraphModel dx="1520" dy="1080" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1500" pageHeight="1060" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="USER JOURNEY: KIẾN TRÚC CLIENT – SERVER – MODEL – SQLITE (REALTIME SSE · TCP :8080)" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=15;fontStyle=1;fontColor=#0F172A;" vertex="1" parent="1">
+          <mxGeometry x="40" y="14" width="1420" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-mom" value="NGƯỜI DÙNG 1 — MẸ&#xa;(Mobile Client #1)&#xa;Không chạm trực tiếp DB" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#F0FDFA;strokeColor=#0F766E;fontColor=#115E59;fontStyle=1;startSize=170;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="64" width="1420" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="step1" value="1. Mở Shopping List &amp; Tick mua&#xa;Gửi GET /api/shopping-list tới Server&#xa;(Chỉ nhận JSON từ Server)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#0F766E;fontColor=#0F172A;fontSize=12;fontStyle=1;" vertex="1" parent="lane-mom">
+          <mxGeometry x="210" y="30" width="280" height="106" as="geometry" />
+        </mxCell>
+        <mxCell id="step2" value="2. Nhập món mới &amp; Bấm Lưu&#xa;Gửi POST /api/food/add tới Server&#xa;Nhận phản hồi HTTP 201 OK" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#CCFBF1;strokeColor=#0F766E;fontColor=#134E4A;fontSize=12;fontStyle=1;" vertex="1" parent="lane-mom">
+          <mxGeometry x="580" y="30" width="300" height="106" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-server" value="PYTHON SERVER (:8080)&#xa;tcp_server.py (Controller)&#xa;Tiếp nhận &amp; Trả Response/SSE" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#EFF6FF;strokeColor=#1D4ED8;fontColor=#1E40AF;fontStyle=1;startSize=170;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="1420" height="175" as="geometry" />
+        </mxCell>
+        <mxCell id="step3a" value="3A. Server Controller nhận Request&#xa;Parse JSON, kiểm tra route &amp; method&#xa;Ủy quyền Model (Controller không viết SQL)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DBEAFE;strokeColor=#1D4ED8;fontColor=#1E3A8A;fontSize=12;fontStyle=1;" vertex="1" parent="lane-server">
+          <mxGeometry x="580" y="32" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="step4" value="4. Trả HTTP 201 &amp; Phát sóng SSE&#xa;GET /api/events (text/event-stream)&#xa;event: inventory_updated (SSE Broker)&#xa;Đẩy thông báo tới mọi Client kết nối" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0E7FF;strokeColor=#4338CA;fontColor=#312E81;fontSize=12;fontStyle=1;" vertex="1" parent="lane-server">
+          <mxGeometry x="990" y="32" width="380" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-model-db" value="TẦNG MODEL &amp; SQLITE DB&#xa;server/models/* + database.py&#xa;Model xử lý 100% dữ liệu" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#F8FAFC;strokeColor=#334155;fontColor=#0F172A;fontStyle=1;startSize=170;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="441" width="1420" height="175" as="geometry" />
+        </mxCell>
+        <mxCell id="step3c" value="3C. SQLite 3NF DB (RLock + WAL)&#xa;Lưu food_items + inventory_transactions&#xa;Dữ liệu phi cấu trúc (recipes, system_settings)&#xa;đứng độc lập — KHÔNG gắn relationship" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F5F9;strokeColor=#475569;fontColor=#0F172A;fontSize=12;fontStyle=1;" vertex="1" parent="lane-model-db">
+          <mxGeometry x="210" y="32" width="300" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="step3b" value="3B. Tầng Model xử lý dữ liệu&#xa;FoodInventoryModel · SystemConfigModel · RecipeModel&#xa;Validate, tính FEFO, ghép công thức trong Model&#xa;và mở DatabaseTransaction an toàn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E2E8F0;strokeColor=#334155;fontColor=#0F172A;fontSize=12;fontStyle=1;" vertex="1" parent="lane-model-db">
+          <mxGeometry x="580" y="32" width="330" height="110" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-dad" value="NGƯỜI DÙNG 2 — BỐ&#xa;(Mobile Client #2)&#xa;Không chạm trực tiếp DB" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#ECFDF5;strokeColor=#059669;fontColor=#065F46;fontStyle=1;startSize=170;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="632" width="1420" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="step5a" value="5A. Điện thoại Bố tự đồng bộ (Không F5)&#xa;EventSource('/api/events') nhận SSE Push&#xa;Gửi GET /api/inventory &amp; /api/fefo tới Server&#xa;để cập nhật MOB-01 / MOB-02 tức thì" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D1FAE5;strokeColor=#059669;fontColor=#064E3B;fontSize=12;fontStyle=1;" vertex="1" parent="lane-dad">
+          <mxGeometry x="990" y="30" width="380" height="108" as="geometry" />
+        </mxCell>
+        <mxCell id="lane-admin" value="ADMIN (DESKTOP UI)&#xa;Client Quản trị Server&#xa;Không chạm trực tiếp DB" style="swimlane;horizontal=0;whiteSpace=wrap;html=1;fillColor=#FFFBEB;strokeColor=#B45309;fontColor=#92400E;fontStyle=1;startSize=170;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="818" width="1420" height="170" as="geometry" />
+        </mxCell>
+        <mxCell id="step5b" value="5B. Admin Client giám sát qua Server API&#xa;Desktop UI chỉ gửi Request &amp; nhận SSE từ Server&#xa;Cập nhật Monitor (DSK-01), Kho (DSK-03) &amp;&#xa;Nhật ký Audit Log (DSK-05) theo thời gian thực" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FEF3C7;strokeColor=#B45309;fontColor=#78350F;fontSize=12;fontStyle=1;" vertex="1" parent="lane-admin">
+          <mxGeometry x="990" y="30" width="380" height="108" as="geometry" />
+        </mxCell>
+        <mxCell id="edge12" value="Chọn món" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#0F766E;" edge="1" parent="1" source="step1" target="step2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge23a" value="HTTP/1.1 REST Request" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#1D4ED8;fontSize=11;fontStyle=1;" edge="1" parent="1" source="step2" target="step3a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge3a3b" value="Gọi Model xử lý" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#334155;fontSize=11;fontStyle=1;" edge="1" parent="1" source="step3a" target="step3b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge3b3c" value="SQLite Transaction ↔ Kết quả" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#475569;startArrow=classic;endArrow=classic;fontSize=11;fontStyle=1;" edge="1" parent="1" source="step3b" target="step3c">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge3b4" value="Model trả kết quả OK" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#4338CA;fontSize=11;fontStyle=1;" edge="1" parent="1" source="step3b" target="step4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge45a" value="SSE Push (Mobile User)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#059669;fontSize=11;fontStyle=1;" edge="1" parent="1" source="step4" target="step5a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge45b" value="SSE Push (Admin Client)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=2;strokeColor=#B45309;fontSize=11;fontStyle=1;" edge="1" parent="1" source="step4" target="step5b">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
