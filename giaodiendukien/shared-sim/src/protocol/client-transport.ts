@@ -1,5 +1,6 @@
 import { DEFAULT_TIMEZONE, formatIsoTimestampInTimezone } from '../domain/calendar-date';
 import type {
+  AiScanPreset,
   AlertsSummary,
   AnalyticsSnapshot,
   CatalogBundle,
@@ -39,6 +40,7 @@ export interface ClientCachedReadSnapshot {
   effective_date: string | null;
   system_config: SystemConfig | null;
   catalogs: CatalogBundle | null;
+  ai_scan_presets: AiScanPreset[];
   fefo_items: FefoRecommendationItem[];
   inventory_items: FoodLotView[];
   recipes: RecipeMatchSuggestion[];
@@ -143,6 +145,7 @@ export class SimulatedClientTransport {
     effective_date: null,
     system_config: null,
     catalogs: null,
+    ai_scan_presets: [],
     fefo_items: [],
     inventory_items: [],
     recipes: [],
@@ -217,6 +220,9 @@ export class SimulatedClientTransport {
           this.cache = {
             ...this.cache,
             ...parsedCache,
+            ai_scan_presets: Array.isArray(parsedCache.ai_scan_presets)
+              ? parsedCache.ai_scan_presets
+              : [],
             fefo_items: Array.isArray(parsedCache.fefo_items) ? parsedCache.fefo_items : [],
             inventory_items: Array.isArray(parsedCache.inventory_items)
               ? parsedCache.inventory_items
@@ -351,6 +357,7 @@ export class SimulatedClientTransport {
       last_latency_ms: this.lastLatencyMs,
       cache: {
         ...this.cache,
+        ai_scan_presets: [...this.cache.ai_scan_presets],
         fefo_items: [...this.cache.fefo_items],
         inventory_items: [...this.cache.inventory_items],
         recipes: [...this.cache.recipes],
@@ -360,6 +367,7 @@ export class SimulatedClientTransport {
     };
   }
 
+  /** @deprecated (test-only) Do not call from production client code; use transport.request(...) instead. */
   public getLocalServerNode(): SimulatedServerNode {
     return this.localServer;
   }
@@ -566,6 +574,10 @@ export class SimulatedClientTransport {
         this.cache.catalogs = data as ProtocolRequestMap['GET_CATALOGS']['res'];
         break;
       }
+      case 'GET_AI_SCAN_PRESETS': {
+        this.cache.ai_scan_presets = data as ProtocolRequestMap['GET_AI_SCAN_PRESETS']['res'];
+        break;
+      }
       case 'UPDATE_SYSTEM_CONFIG':
       case 'SHIFT_SIMULATED_DATE': {
         this.cache.system_config = data as SystemConfig;
@@ -662,7 +674,7 @@ export class SimulatedClientTransport {
           ok: false,
           error: {
             code: 'DB_ERROR',
-            message: 'Lỗi kết nối CSDL MySQL giả lập trên Desktop Server.',
+            message: 'Lỗi kết nối CSDL SQLite giả lập trên Desktop Server.',
           },
           request_id: reqId,
           timestamp: new Date().toISOString(),

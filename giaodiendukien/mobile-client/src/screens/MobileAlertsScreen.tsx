@@ -205,7 +205,8 @@ export function MobileAlertsScreen({
                           <div className="mob-food-card-top">
                             <h3 className="mob-food-card-title">{item.food_name}</h3>
                             <span className="badge badge-urgent mono-num">
-                              {formatDaysRemainingLabel(item.days_remaining)}
+                              <span aria-hidden="true">⏳</span>
+                              <span>{formatDaysRemainingLabel(item.days_remaining)}</span>
                             </span>
                           </div>
                           <div className="mob-food-meta-row">
@@ -269,6 +270,7 @@ export function MobileAlertsScreen({
             <article
               key={item.item_id}
               className="mob-food-card"
+              style={{ borderLeft: '4px solid var(--status-lowstock-base)' }}
               data-testid={`mob-alert-lowstock-${item.item_id}`}
             >
               <button
@@ -281,10 +283,10 @@ export function MobileAlertsScreen({
                     <h3 className="mob-food-card-title">{item.food_name}</h3>
                     <span
                       className={`badge ${
-                        item.status === 'Đã hết' ? 'badge-empty' : 'badge-urgent'
+                        item.status === 'Đã hết' ? 'badge-empty' : 'badge-lowstock'
                       }`}
                     >
-                      {item.status === 'Đã hết' ? 'Đã hết' : 'Dưới ngưỡng min'}
+                      {item.status === 'Đã hết' ? 'Đã hết' : 'Cạn kho · Dưới min'}
                     </span>
                   </div>
                   <div className="mob-food-meta-row">

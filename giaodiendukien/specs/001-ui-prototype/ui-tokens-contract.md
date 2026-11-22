@@ -9,7 +9,7 @@
 
 ## 1. Visual World & Anti-Slop Invariants
 
-1. **Zero Violet / Purple Rule**: No violet, purple, indigo, or lavender hex values exist anywhere in Desktop, Mobile, or DataViz tokens. Brand identity runs strictly on **Botanical Deep Teal** (`#0F766E` / `#115E59`) paired with **Crisp Slate** (`#0F172A` / `#111827`) on Desktop and **Warm Pantry Stone** (`#FAF9F6`) on Mobile.
+1. **Brand Teal + Reserved Low-Stock Exception**: Brand identity runs strictly on **Botanical Deep Teal** (`#0F766E` / `#115E59`) paired with **Crisp Slate** (`#0F172A` / `#111827`) on Desktop and **Warm Pantry Stone** (`#FAF9F6`) on Mobile. Per the 4-level Color-Coded Lifecycle (`QT-03`), **Tím than** (`#312E81` on `#E0E7FF`, base `#4338CA`, dark chrome `#A5B4FC`) is reserved exclusively for **Cạn kho (`current_quantity <= min_threshold`)** and must never be used as a decorative brand color.
 2. **Strict 2-Font System**:
    - `--font-sans`: `'Be Vietnam Pro'` (UI controls, headings, KPI hero figures, Vietnamese diacritics `ầ, ễ, ộ, ư`).
    - `--font-mono`: `'JetBrains Mono'` (`tabular-nums` strictly for `item_code`, dates, `IP:Port`, vertical table columns, and server packet trace logs).
@@ -53,10 +53,20 @@ Computed deterministically via `dataviz/scripts/validate_palette.js` (`contrast(
 | `.badge-fresh` | `#166534` on `#DCFCE7` | `6.49:1` | `77.9` | AA Text (`#15803D` base `4.57:1`) |
 | `.badge-urgent` | `#92400E` on `#FEF3C7` | `6.37:1` | `76.6` | AA Text (`#B45309` base `4.51:1`) |
 | `.badge-expired` | `#991B1B` on `#FEE2E2` | `6.80:1` | `73.7` | AA Text (`#B91C1C` base `5.30:1`) |
+| `.badge-lowstock` (Cạn kho) | `#312E81` on `#E0E7FF` | `8.74:1` | `89.6` | AAA Text (`#4338CA` base `5.91:1`) |
 | `.badge-info` | `#1D4ED8` on `#DBEAFE` | `5.49:1` | `68.8` | AA Text |
 | `.badge-empty` | `#334155` on `#F1F5F9` | `9.45:1` | `87.7` | AAA Text |
 | `.badge-cancelled` (Desktop / Mobile) | `#475569` on `#E2E8F0` / `#57534E` on `#E7E5E4` | `6.15` / `6.08` | `72.3` / `71.4` | AA Text |
 | `.offline-banner` | `#92400E` on `#FEF3C7` | `6.37:1` | `76.6` | AA Text |
+
+### 3.1. 4-Level Color-Coded Lifecycle (`QT-03`)
+
+| Trạng thái | Điều kiện nghiệp vụ | Màu sắc & Token | Ký hiệu đi kèm |
+|---|---|---|---|
+| **An toàn** | Hạn dùng còn `> 3 ngày` | **Xanh lục** (`.badge-fresh`: `#166534` / `#DCFCE7`) | Badge an toàn |
+| **Cận hạn (FEFO Cấp 1)** | Hạn dùng còn `1–3 ngày` | **Vàng cam** (`.badge-urgent`: `#92400E` / `#FEF3C7`) | Biểu tượng đồng hồ cát (`⏳`) |
+| **Nguy cấp / Hết hạn** | Quá hạn hoặc hết hạn hôm nay (`<= 0 ngày`) | **Đỏ rực** (`.badge-expired`: `#991B1B` / `#FEE2E2`) | Cảnh báo tiêu hủy |
+| **Cạn kho** | `current_quantity <= min_threshold` | **Tím than** (`.badge-lowstock`: `#312E81` / `#E0E7FF`) | Nhãn `Cạn kho / Cần mua thêm` |
 
 ---
 
@@ -143,7 +153,7 @@ Both `desktop-server/src/styles/tokens.css` and `mobile-client/src/styles/tokens
 |---|---|
 | `.mono-num` | Tabular monospace (`JetBrains Mono`, `tabular-nums`) for `item_code`, dates, `IP:Port`, quantity columns, packet logs |
 | `.kpi-num` | Proportional sans figures for hero/KPI metrics |
-| `.badge` + `.badge-fresh` \| `.badge-urgent` \| `.badge-expired` \| `.badge-empty` \| `.badge-cancelled` \| `.badge-info` | Pill badge (`11px` Desktop / `12px` Mobile). Always include icon or status dot + label |
+| `.badge` + `.badge-fresh` \| `.badge-urgent` \| `.badge-expired` \| `.badge-lowstock` \| `.badge-empty` \| `.badge-cancelled` \| `.badge-info` | Pill badge (`11px` Desktop / `12px` Mobile). Always include icon (`⏳` for urgent 1–3d) or status dot + label |
 | `.btn` + `.btn-primary` \| `.btn-secondary` \| `.btn-ghost` \| `.btn-danger` | Action buttons. `.btn-ghost` MUST be used for `Hủy` / `Đóng` / `Giữ lại` |
 | `.btn-fixed-sm` \| `.btn-fixed-md` \| `.btn-fixed-lg` \| `.btn-fixed-full` | Fixed width locks to prevent layout shift during in-flight loading |
 | `.btn-spinner` | `200ms` deferred loading spinner (`animation-delay: var(--spinner-defer-delay)`) |

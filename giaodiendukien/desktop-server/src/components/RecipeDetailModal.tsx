@@ -9,11 +9,12 @@ import {
   Utensils,
   X,
 } from 'lucide-react';
-import type {
-  CookRecipeResult,
-  FoodLotView,
-  RecipeMatchSuggestion,
-  ServerResponse,
+import {
+  normalizeVietnameseSearchText,
+  type CookRecipeResult,
+  type FoodLotView,
+  type RecipeMatchSuggestion,
+  type ServerResponse,
 } from '@food-mgmt/shared-sim';
 import { formatDaysRemainingLabel, formatQuantity } from '../domain/pantry-formatters';
 
@@ -46,12 +47,17 @@ export function RecipeDetailModal({
     if (focusItemId === undefined) return recipes;
     const focusLot = allLots.find((l) => l.item_id === focusItemId);
     if (!focusLot) return recipes;
+    const focusName = normalizeVietnameseSearchText(focusLot.food_name);
     const matched = recipes.filter((s) =>
-      s.ingredient_statuses.some(
-        (ing) =>
-          ing.matched_item_id === focusItemId ||
-          (ing.food_id !== null && ing.food_id === focusLot.food_id),
-      ),
+      s.ingredient_statuses.some((ing) => {
+        if (ing.matched_item_id === focusItemId) return true;
+        const ingName = normalizeVietnameseSearchText(ing.ingredient_name);
+        return (
+          Boolean(ingName) &&
+          Boolean(focusName) &&
+          (focusName.includes(ingName) || ingName.includes(focusName))
+        );
+      }),
     );
     return matched.length > 0 ? matched : recipes;
   }, [recipes, focusItemId, allLots]);

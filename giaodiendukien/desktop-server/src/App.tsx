@@ -1,10 +1,6 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
-import {
-  buildFoodLotViews,
-  type AuditLogFilter,
-  type FoodSearchFilter,
-} from '@food-mgmt/shared-sim';
+import type { AuditLogFilter, FoodSearchFilter } from '@food-mgmt/shared-sim';
 import { useDesktopServer } from './state/useDesktopServer';
 import { WindowShell } from './components/WindowShell';
 import { FoodDetailDrawer } from './components/FoodDetailDrawer';
@@ -44,12 +40,7 @@ const EMPTY_AUDIT_FILTER: AuditLogFilter = {
 
 export function App() {
   const ctrl = useDesktopServer();
-
-  // Derive unfiltered FoodLotView list directly from current DB state so DSK-01/DSK-02/DSK-04/DSK-M03
-  // always find active/expired lots even when DSK-03 has search filters applied.
-  const allLots = useMemo(() => {
-    return buildFoodLotViews(ctrl.node.getDatabaseSnapshot());
-  }, [ctrl.node, ctrl.inventory, ctrl.status, ctrl.stats, ctrl.alerts]);
+  const allLots = ctrl.allLots;
 
   // Global Desktop Keyboard Shortcuts (34-desktop-app-design)
   useEffect(() => {

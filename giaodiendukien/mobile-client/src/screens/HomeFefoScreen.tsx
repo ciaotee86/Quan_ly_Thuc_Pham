@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import {
   AlertTriangle,
   ChefHat,
@@ -38,6 +38,7 @@ interface HomeFefoScreenProps {
   onChangeFilter: (area: AreaType | 'all', priority: FefoPriorityLevel | 'all') => void;
   onOpenAlerts: () => void;
   onOpenItemDetail: (itemId: number) => void;
+  onQuickUseOne: (item: FefoRecommendationItem) => Promise<void>;
   onQuickUse: (item: FefoRecommendationItem) => void;
   onOpenRecipes: (focusItemId?: number) => void;
   onOpenCreateFood: () => void;
@@ -59,11 +60,13 @@ export function HomeFefoScreen({
   onChangeFilter,
   onOpenAlerts,
   onOpenItemDetail,
+  onQuickUseOne,
   onQuickUse,
   onOpenRecipes,
   onOpenCreateFood,
 }: HomeFefoScreenProps) {
   const touchStartYRef = useRef<number | null>(null);
+  const [quickUsingId, setQuickUsingId] = useState<number | null>(null);
 
   const expiredCount = alerts?.expired_items.length ?? 0;
   const expiringSoonCount = alerts?.expiring_soon_items.length ?? 0;
@@ -374,7 +377,7 @@ export function HomeFefoScreen({
                     <button
                       type="button"
                       className="btn btn-ghost"
-                      style={{ minHeight: 40, padding: '0 10px', fontSize: 13 }}
+                      style={{ minHeight: 44, padding: '0 10px', fontSize: 13 }}
                       onClick={() => onOpenRecipes(item.item_id)}
                     >
                       <ChefHat size={15} aria-hidden="true" />
@@ -384,16 +387,38 @@ export function HomeFefoScreen({
                     <span className="t-micro">{item.suggested_action}</span>
                   )}
 
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    style={{ minHeight: 40, padding: '0 14px', fontSize: 13 }}
-                    disabled={isOfflineReadOnly}
-                    data-testid={`mob-fefo-use-${item.item_id}`}
-                    onClick={() => onQuickUse(item)}
-                  >
-                    Dùng ngay
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ minHeight: 44, padding: '0 10px', fontSize: 13 }}
+                      disabled={isOfflineReadOnly}
+                      data-testid={`mob-fefo-use-${item.item_id}`}
+                      onClick={() => onQuickUse(item)}
+                      title="Mở bảng chọn số lượng tùy chỉnh"
+                    >
+                      Tùy chỉnh
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary"
+                      style={{ minHeight: 44, padding: '0 12px', fontSize: 13 }}
+                      disabled={
+                        isOfflineReadOnly ||
+                        quickUsingId === item.item_id ||
+                        item.current_quantity < 1
+                      }
+                      data-testid={`mob-fefo-quick-use-${item.item_id}`}
+                      onClick={() => {
+                        setQuickUsingId(item.item_id);
+                        void onQuickUseOne(item).finally(() => {
+                          setQuickUsingId((prev) => (prev === item.item_id ? null : prev));
+                        });
+                      }}
+                    >
+                      {quickUsingId === item.item_id ? 'Đang trừ…' : '-1 nhanh'}
+                    </button>
+                  </div>
                 </div>
               </article>
             ))}

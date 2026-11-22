@@ -41,6 +41,7 @@ import {
   deleteRecipe,
   deleteUnit,
   getAuditLogs,
+  getCatalogMetadata,
   getItemDetail,
   moveFoodLocation,
   restockFood,
@@ -324,6 +325,7 @@ export class SimulatedServerNode {
     };
   }
 
+  /** @deprecated (test-only) Do not call from production client code; use protocol RPC actions instead. */
   public getDatabaseSnapshot(): HouseholdDatabaseState {
     return structuredClone(this.db);
   }
@@ -371,14 +373,14 @@ export class SimulatedServerNode {
   public setDbHealthy(healthy: boolean): void {
     this.runtime.db_healthy = healthy;
     this.appendPacketLog({
-      direction: 'DESKTOP->DB',
-      device: 'MySQL Engine (Sim)',
+      direction: 'SERVER->PUSH',
+      device: 'SQLite Engine (Sim)',
       action: healthy ? 'DB_RECONNECTED' : 'DB_CONNECTION_LOST',
       status: healthy ? 'OK' : 'ERROR',
       latency_ms: 0,
       payload_summary: healthy
         ? 'Kết nối CSDL food_management hoạt động bình thường'
-        : 'Mất kết nối CSDL MySQL giả lập — khóa mọi thao tác đọc/ghi kho',
+        : 'Mất kết nối CSDL SQLite giả lập — khóa mọi thao tác đọc/ghi kho',
     });
     this.persistState();
     this.notifyStatusSubscribers();
@@ -576,10 +578,10 @@ export class SimulatedServerNode {
       if (fault === 'DB_ERROR') {
         const dbErr: ProtocolError = {
           code: 'DB_ERROR',
-          message: 'Lỗi kết nối CSDL MySQL giả lập trên Desktop Server.',
+          message: 'Lỗi kết nối CSDL SQLite giả lập trên Desktop Server.',
         };
         this.appendPacketLog({
-          direction: 'DESKTOP->DB',
+          direction: 'CLIENT->SERVER',
           device: caller.device_name,
           action,
           status: 'ERROR',
@@ -625,10 +627,10 @@ export class SimulatedServerNode {
       const elapsed = Date.now() - startMs;
       const err: ProtocolError = {
         code: 'DB_ERROR',
-        message: 'Không thể truy vấn CSDL MySQL (food_management) giả lập. Kiểm tra kết nối DB trên Server.',
+        message: 'Không thể truy vấn CSDL SQLite (food_management) giả lập. Kiểm tra kết nối DB trên Server.',
       };
       this.appendPacketLog({
-        direction: 'DESKTOP->DB',
+        direction: 'CLIENT->SERVER',
         device: caller.device_name,
         action,
         status: 'ERROR',
@@ -650,8 +652,7 @@ export class SimulatedServerNode {
     // 4. Execute requested domain action
     const result = this.executeActionSync(action, payload, caller.device_name);
     const elapsed = Math.max(1, Date.now() - startMs);
-    const direction: PacketDirection =
-      caller.source === 'desktop' ? 'DESKTOP->DB' : 'CLIENT->SERVER';
+    const direction: PacketDirection = 'CLIENT->SERVER';
 
     if (!result.ok) {
       this.appendPacketLog({
@@ -1064,6 +1065,26 @@ export class SimulatedServerNode {
           ok: true,
           data: data as ProtocolRequestMap[A]['res'],
           summary: `Đồng bộ danh mục (${data.categories.length} loại, ${data.units.length} đơn vị, ${data.storage_locations.length} vị trí, ${data.recipes.length} món)`,
+          mutated: false,
+        };
+      }
+
+      case 'GET_CATALOG_METADATA': {
+        const data = getCatalogMetadata(this.db);
+        return {
+          ok: true,
+          data: data as ProtocolRequestMap[A]['res'],
+          summary: `Đồng bộ metadata danh mục (${data.foods.length} thực phẩm chuẩn)`,
+          mutated: false,
+        };
+      }
+
+      case 'GET_AI_SCAN_PRESETS': {
+        const data = this.getAiScanPresets();
+        return {
+          ok: true,
+          data: data as ProtocolRequestMap[A]['res'],
+          summary: `Trả ${data.length} mẫu quét AI Vision`,
           mutated: false,
         };
       }

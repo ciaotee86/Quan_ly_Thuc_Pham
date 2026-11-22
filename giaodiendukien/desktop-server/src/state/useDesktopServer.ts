@@ -7,6 +7,7 @@ import {
   type AreaType,
   type AuditLogFilter,
   type CatalogBundle,
+  type CatalogReferenceCounts,
   type Category,
   type FaultInjectionMode,
   type FefoListResult,
@@ -98,11 +99,14 @@ export type CatalogFormModalState =
   | { open: true; entity: 'location'; record?: StorageLocation }
   | { open: true; entity: 'recipe'; record?: Recipe };
 
-export interface ReferenceCounts {
-  categories: Record<number, number>;
-  units: Record<number, number>;
-  locations: Record<number, number>;
-}
+export type ReferenceCounts = CatalogReferenceCounts;
+
+const EMPTY_CATALOGS: CatalogBundle = {
+  categories: [],
+  units: [],
+  storage_locations: [],
+  recipes: [],
+};
 
 const DEFAULT_INVENTORY_FILTER: FoodSearchFilter = {
   keyword: '',
@@ -148,8 +152,9 @@ export function useDesktopServer() {
   const [inventoryFilter, setInventoryFilter] = useState<FoodSearchFilter>(DEFAULT_INVENTORY_FILTER);
   const [auditFilter, setAuditFilter] = useState<AuditLogFilter>(DEFAULT_AUDIT_FILTER);
 
-  const [catalogs, setCatalogs] = useState<CatalogBundle>(() => node.getCatalogsBundle());
-  const [allFoods, setAllFoods] = useState<Food[]>(() => node.getDatabaseSnapshot().foods);
+  const [catalogs, setCatalogs] = useState<CatalogBundle>(EMPTY_CATALOGS);
+  const [allFoods, setAllFoods] = useState<Food[]>([]);
+  const [allLots, setAllLots] = useState<FoodLotView[]>([]);
   const [referenceCounts, setReferenceCounts] = useState<ReferenceCounts>({
     categories: {},
     units: {},
@@ -162,7 +167,7 @@ export function useDesktopServer() {
   const [inventory, setInventory] = useState<SearchFoodItemsResult | null>(null);
   const [auditLogs, setAuditLogs] = useState<GetAuditLogsResult | null>(null);
   const [alerts, setAlerts] = useState<AlertsSummary>(() => node.getStatusSnapshot().alerts_summary);
-  const [aiPresets, setAiPresets] = useState<AiScanPreset[]>(() => node.getAiScanPresets());
+  const [aiPresets, setAiPresets] = useState<AiScanPreset[]>([]);
 
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [dbErrorMessage, setDbErrorMessage] = useState<string | null>(null);
@@ -254,24 +259,6 @@ export function useDesktopServer() {
     [pushToast],
   );
 
-  const computeReferenceCounts = useCallback(() => {
-    const db = node.getDatabaseSnapshot();
-    const catCounts: Record<number, number> = {};
-    const unitCounts: Record<number, number> = {};
-    const locCounts: Record<number, number> = {};
-
-    for (const food of db.foods) {
-      catCounts[food.category_id] = (catCounts[food.category_id] ?? 0) + 1;
-      unitCounts[food.default_unit_id] = (unitCounts[food.default_unit_id] ?? 0) + 1;
-    }
-    for (const item of db.food_items) {
-      unitCounts[item.unit_id] = (unitCounts[item.unit_id] ?? 0) + 1;
-      locCounts[item.location_id] = (locCounts[item.location_id] ?? 0) + 1;
-    }
-    setAllFoods(db.foods);
-    setReferenceCounts({ categories: catCounts, units: unitCounts, locations: locCounts });
-  }, [node]);
-
   const refreshDrawerDetail = useCallback(
     async (itemId: number | null) => {
       if (itemId === null) {
@@ -306,22 +293,43 @@ export function useDesktopServer() {
         if (showSkeleton) setIsLoadingData(true);
         const snap = node.getStatusSnapshot();
         applyStatusSnapshot(snap);
-        setAiPresets(node.getAiScanPresets());
-        computeReferenceCounts();
 
-        const [catRes, statsRes, fefoRes, recRes, invRes, alertRes, auditRes] = await Promise.all([
+        const [
+          catRes,
+          catMetaRes,
+          aiPresetsRes,
+          statsRes,
+          fefoRes,
+          recRes,
+          allLotsRes,
+          invRes,
+          alertRes,
+          auditRes,
+        ] = await Promise.all([
           node.executeDesktopAction('GET_CATALOGS', undefined),
+          node.executeDesktopAction('GET_CATALOG_METADATA', undefined),
+          node.executeDesktopAction('GET_AI_SCAN_PRESETS', {}),
           node.executeDesktopAction('GET_STATS', statsQueryRef.current),
           node.executeDesktopAction('GET_FEFO_LIST', fefoFilterRef.current),
           node.executeDesktopAction('GET_RECIPES', undefined),
+          node.executeDesktopAction('SEARCH_FOOD_ITEMS', DEFAULT_INVENTORY_FILTER),
           node.executeDesktopAction('SEARCH_FOOD_ITEMS', inventoryFilterRef.current),
           node.executeDesktopAction('GET_ALERTS', { trigger_scan: false }),
           node.executeDesktopAction('GET_AUDIT_LOGS', auditFilterRef.current),
         ]);
 
-        const firstError = [catRes, statsRes, fefoRes, recRes, invRes, alertRes, auditRes].find(
-          (r) => !r.ok,
-        );
+        const firstError = [
+          catRes,
+          catMetaRes,
+          aiPresetsRes,
+          statsRes,
+          fefoRes,
+          recRes,
+          allLotsRes,
+          invRes,
+          alertRes,
+          auditRes,
+        ].find((r) => !r.ok);
 
         if (firstError && !firstError.ok && firstError.error.code === 'DB_ERROR') {
           setDbErrorMessage(firstError.error.message);
@@ -330,9 +338,15 @@ export function useDesktopServer() {
         }
 
         if (catRes.ok) setCatalogs(catRes.data);
+        if (catMetaRes.ok) {
+          setAllFoods(catMetaRes.data.foods);
+          setReferenceCounts(catMetaRes.data.reference_counts);
+        }
+        if (aiPresetsRes.ok) setAiPresets(aiPresetsRes.data);
         if (statsRes.ok) setStats(statsRes.data);
         if (fefoRes.ok) setFefo(fefoRes.data);
         if (recRes.ok) setRecipes(recRes.data);
+        if (allLotsRes.ok) setAllLots(allLotsRes.data.items);
         if (invRes.ok) setInventory(invRes.data);
         if (alertRes.ok) setAlerts(alertRes.data);
         if (auditRes.ok) setAuditLogs(auditRes.data);
@@ -352,7 +366,7 @@ export function useDesktopServer() {
         }
       }
     },
-    [node, applyStatusSnapshot, computeReferenceCounts, refreshDrawerDetail],
+    [node, applyStatusSnapshot, refreshDrawerDetail],
   );
 
   // Initial load & stable single-mount subscription to server status and cross-tab Mobile pushes
@@ -725,6 +739,7 @@ export function useDesktopServer() {
 
     catalogs,
     allFoods,
+    allLots,
     referenceCounts,
     stats,
     fefo,

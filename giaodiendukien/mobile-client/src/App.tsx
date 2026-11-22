@@ -160,6 +160,17 @@ export function App() {
           }}
           onOpenAlerts={() => client.navigateToTab('MOB-05')}
           onOpenItemDetail={client.openItemDetail}
+          onQuickUseOne={async (item) => {
+            const res = await client.submitUseFood(
+              item.item_id,
+              1,
+              'Dùng nhanh 1 chạm theo FEFO',
+              item.current_quantity,
+            );
+            if (!res.ok) {
+              client.showToast(res.error.message);
+            }
+          }}
           onQuickUse={(item) => {
             const matchedLot = masterLots.find((lot) => lot.item_id === item.item_id);
             client.setStockSheetTarget({

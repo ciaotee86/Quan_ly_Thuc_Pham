@@ -96,6 +96,12 @@
   --status-expired-bg:     #FEE2E2;
   --status-expired-border: #FCA5A5;
 
+  /* Cạn kho (Low Stock: current_quantity <= min_threshold — Tím than) */
+  --status-lowstock-ink:    #312E81; /* 8.74:1 on #E0E7FF */
+  --status-lowstock-base:   #4338CA; /* 5.91:1 on #E0E7FF, 8.21:1 on #FFFFFF */
+  --status-lowstock-bg:     #E0E7FF;
+  --status-lowstock-border: #818CF8;
+
   /* Info / Network Sync */
   --status-info-ink:    #1E40AF; /* 8.01:1 on #EFF6FF */
   --status-info-base:   #1D4ED8; /* 5.49:1 on #DBEAFE, 6.70:1 on #FFFFFF */
@@ -117,6 +123,7 @@
   --chrome-warn: #FCD34D; /* 12.38:1 on #0F172A */
   --chrome-crit: #FDA4AF; /* 9.44:1 on #0F172A */
   --chrome-info: #60A5FA;
+  --chrome-lowstock: #A5B4FC; /* 9.48:1 on #0F172A — Tím than (Cạn kho) */
 
   /* ── 7. DATAVIZ TOKENS (Validated via dataviz/scripts/validate_palette.js) ── */
   --viz-surface:       #FFFFFF;
@@ -339,6 +346,12 @@ button {
   color: var(--status-expired-ink);
   background-color: var(--status-expired-bg);
   border-color: var(--status-expired-border);
+}
+
+.badge-lowstock {
+  color: var(--status-lowstock-ink);
+  background-color: var(--status-lowstock-bg);
+  border-color: var(--status-lowstock-border);
 }
 
 .badge-empty {

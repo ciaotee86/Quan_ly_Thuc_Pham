@@ -131,7 +131,7 @@ export function doesIngredientMatchFood(
   foodId: number,
   normalizedFoodName: string,
 ): boolean {
-  if (ing.food_id !== null) {
+  if (ing.food_id !== undefined && ing.food_id !== null) {
     return ing.food_id === foodId;
   }
   const normalizedIngName = normalizeVietnameseSearchText(ing.ingredient_name);
@@ -339,7 +339,7 @@ export function suggestRecipesForPantry(
         missingCount += 1;
         return {
           ingredient_id: ing.ingredient_id,
-          food_id: ing.food_id,
+          food_id: ing.food_id ?? null,
           ingredient_name: ing.ingredient_name,
           required_quantity: ing.quantity,
           unit_name: ing.unit_name,
@@ -377,7 +377,7 @@ export function suggestRecipesForPantry(
 
       return {
         ingredient_id: ing.ingredient_id,
-        food_id: ing.food_id,
+        food_id: ing.food_id ?? null,
         ingredient_name: ing.ingredient_name,
         required_quantity: ing.quantity,
         unit_name: ing.unit_name,

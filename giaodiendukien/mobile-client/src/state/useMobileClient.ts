@@ -267,6 +267,9 @@ export function useMobileClient() {
   const [alerts, setAlerts] = useState<AlertsSummary | null>(
     () => transport.getSnapshot().cache.alerts,
   );
+  const [aiPresets, setAiPresets] = useState<AiScanPreset[]>(
+    () => transport.getSnapshot().cache.ai_scan_presets ?? [],
+  );
   const [statsRange, setStatsRange] = useState<7 | 30>(7);
   const [stats, setStats] = useState<AnalyticsSnapshot | null>(
     () => transport.getSnapshot().cache.stats,
@@ -487,6 +490,7 @@ export function useMobileClient() {
               statsRes,
               logsRes,
               catalogsRes,
+              aiPresetsRes,
             ] = await Promise.all([
               transport.request('GET_FEFO_LIST', {
                 area_type: activeFefoArea,
@@ -501,6 +505,7 @@ export function useMobileClient() {
               transport.request('GET_STATS', { range_days: activeStatsRange }),
               transport.request('GET_AUDIT_LOGS', { action_type: 'all' }),
               transport.request('GET_CATALOGS', undefined),
+              transport.request('GET_AI_SCAN_PRESETS', {}),
             ]);
 
             const postSnap = transport.getSnapshot();
@@ -539,6 +544,9 @@ export function useMobileClient() {
             }
             if (catalogsRes.ok) {
               // Cache updated internally by transport
+            }
+            if (aiPresetsRes.ok) {
+              setAiPresets(aiPresetsRes.data);
             }
 
             if (latest.detailItemId !== null && latest.currentScreen === 'MOB-03') {
@@ -715,6 +723,9 @@ export function useMobileClient() {
       setServerAuditLogs(
         (prev) => prev ?? buildAuditLogsResult(snap.cache.audit_logs, auditActionFilter),
       );
+    }
+    if (snap.cache.ai_scan_presets?.length) {
+      setAiPresets((prev) => (prev.length > 0 ? prev : snap.cache.ai_scan_presets));
     }
     setScreenStack(['MOB-01']);
   }, [auditActionFilter, effectiveDate, fefoResult, transport]);
@@ -973,8 +984,8 @@ export function useMobileClient() {
 
   // AI Scan (MOB-S04) & Food Form (MOB-06)
   const getAiPresets = useCallback((): AiScanPreset[] => {
-    return transport.getLocalServerNode().getAiScanPresets();
-  }, [transport]);
+    return aiPresets;
+  }, [aiPresets]);
 
   const runAiScan = useCallback(
     async (payload: { preset_id?: string; file_name?: string; simulated_blur?: boolean }) => {
