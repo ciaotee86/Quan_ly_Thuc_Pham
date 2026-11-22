@@ -78,11 +78,11 @@ export function CatalogFormModal({
       setPriorityHint(r?.priority_hint ?? '');
       setIngredients(
         r?.ingredients?.length
-          ? r.ingredients.map((i) => ({ ...i }))
+          ? r.ingredients.map((i) => ({ ...i, food_id: null }))
           : [
               {
                 ingredient_id: 1,
-                food_id: allFoods[0]?.food_id ?? null,
+                food_id: null,
                 ingredient_name: allFoods[0]?.food_name ?? '',
                 quantity: 0.3,
                 unit_name:
@@ -132,7 +132,6 @@ export function CatalogFormModal({
 
   const handlePickFoodForIngredient = (idx: number, foodIdVal: string) => {
     if (!foodIdVal) {
-      handleUpdateIngredient(idx, { food_id: null });
       return;
     }
     const fid = Number(foodIdVal);
@@ -141,7 +140,7 @@ export function CatalogFormModal({
     const unitName =
       catalogs.units.find((u) => u.unit_id === food.default_unit_id)?.unit_name ?? 'đơn vị';
     handleUpdateIngredient(idx, {
-      food_id: food.food_id,
+      food_id: null,
       ingredient_name: food.food_name,
       unit_name: unitName,
     });
@@ -202,7 +201,9 @@ export function CatalogFormModal({
       return;
     }
 
-    const cleanedIngredients = ingredients.filter((i) => i.ingredient_name.trim().length > 0);
+    const cleanedIngredients = ingredients
+      .filter((i) => i.ingredient_name.trim().length > 0)
+      .map((i) => ({ ...i, food_id: null }));
     const steps = stepsText
       .split('\n')
       .map((s) => s.trim())
@@ -375,11 +376,11 @@ export function CatalogFormModal({
                     {ingredients.map((ing, idx) => (
                       <div key={ing.ingredient_id} className="ing-editor-row">
                         <select
-                          aria-label="Liên kết thực phẩm trong kho"
-                          value={ing.food_id ?? ''}
+                          aria-label="Gợi ý điền nhanh từ danh sách thực phẩm"
+                          value=""
                           onChange={(e) => handlePickFoodForIngredient(idx, e.target.value)}
                         >
-                          <option value="">-- Nhập tay / ngoài kho --</option>
+                          <option value="">-- Gợi ý tên từ kho (tự do) --</option>
                           {allFoods.map((f) => (
                             <option key={f.food_id} value={f.food_id}>
                               {f.food_code} · {f.food_name}

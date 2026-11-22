@@ -1,5 +1,9 @@
 PRAGMA foreign_keys = ON;
 
+-- =============================================================================
+-- 1. STRUCTURED RELATIONAL TABLES (Strict 3NF with Foreign Key Relationships)
+-- =============================================================================
+
 CREATE TABLE IF NOT EXISTS categories (
     category_id INTEGER PRIMARY KEY AUTOINCREMENT,
     category_name TEXT NOT NULL UNIQUE,
@@ -57,6 +61,13 @@ CREATE TABLE IF NOT EXISTS inventory_transactions (
     FOREIGN KEY (item_id) REFERENCES food_items(item_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+-- =============================================================================
+-- 2. UNSTRUCTURED / SEMI-STRUCTURED STANDALONE TABLES
+-- Zero Foreign Keys, zero relational couplings, zero SQL View references.
+-- Parsed, validated, and matched strictly at runtime in Server Models
+-- (SystemConfigModel, RecipeModel / FoodInventoryModel).
+-- =============================================================================
+
 CREATE TABLE IF NOT EXISTS system_settings (
     setting_id INTEGER PRIMARY KEY AUTOINCREMENT,
     setting_key TEXT NOT NULL UNIQUE,
@@ -70,6 +81,13 @@ CREATE TABLE IF NOT EXISTS recipes (
     required_ingredients TEXT NOT NULL,
     cooking_guide TEXT NOT NULL
 );
+
+-- =============================================================================
+-- 3. INDEXES & STRUCTURED RELATIONAL VIEWS
+-- Views operate exclusively on structured relational tables using
+-- DATE('now', 'localtime'). Runtime simulation_date and configurable thresholds
+-- are applied by SystemConfigModel + FoodInventoryModel in the Server layer.
+-- =============================================================================
 
 CREATE INDEX IF NOT EXISTS idx_food_items_fefo ON food_items(status, expiration_date ASC);
 CREATE INDEX IF NOT EXISTS idx_food_items_location ON food_items(location_id);
@@ -87,10 +105,10 @@ SELECT
     fi.min_threshold,
     u.unit_name,
     fi.expiration_date,
-    CAST(ROUND(JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) AS INTEGER) AS days_left,
+    CAST(ROUND(JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) AS INTEGER) AS days_left,
     CASE 
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) < 0 THEN 'ĐÃ HẾT HẠN'
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) <= 3 THEN 'SẮP HẾT HẠN'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) < 0 THEN 'ĐÃ HẾT HẠN'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) <= 3 THEN 'SẮP HẾT HẠN'
         WHEN fi.current_quantity <= fi.min_threshold THEN 'SẮP HẾT TỒN KHO'
         ELSE 'BÌNH THƯỜNG'
     END AS alert_type
@@ -101,7 +119,7 @@ JOIN storage_locations sl ON fi.location_id = sl.location_id
 JOIN units u ON fi.unit_id = u.unit_id
 WHERE fi.status = 'ACTIVE' 
   AND (
-      (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) <= 3
+      (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) <= 3
       OR fi.current_quantity <= fi.min_threshold
   );
 
@@ -117,17 +135,17 @@ SELECT
     u.unit_name,
     fi.import_date,
     fi.expiration_date,
-    CAST(ROUND(JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) AS INTEGER) AS days_left,
+    CAST(ROUND(JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) AS INTEGER) AS days_left,
     CASE 
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) < 0 THEN 'Đã hết hạn'
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) <= 2 THEN 'Ưu tiên Cao'
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) <= 7 THEN 'Ưu tiên Trung bình'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) < 0 THEN 'Đã hết hạn'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) <= 2 THEN 'Ưu tiên Cao'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) <= 7 THEN 'Ưu tiên Trung bình'
         ELSE 'Ưu tiên Thấp'
     END AS priority_level,
     CASE 
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) < 0 THEN 'Cần thanh lý/bỏ khỏi tủ'
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) <= 2 THEN 'Nấu ngay hôm nay/ngày mai'
-        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(IFNULL((SELECT setting_value FROM system_settings WHERE setting_key = 'simulation_date'), DATE('now')))) <= 7 THEN 'Lên kế hoạch dùng trong tuần'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) < 0 THEN 'Cần thanh lý/bỏ khỏi tủ'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) <= 2 THEN 'Nấu ngay hôm nay/ngày mai'
+        WHEN (JULIANDAY(fi.expiration_date) - JULIANDAY(DATE('now', 'localtime'))) <= 7 THEN 'Lên kế hoạch dùng trong tuần'
         ELSE 'Bảo quản bình thường'
     END AS suggested_action
 FROM food_items fi

@@ -78,7 +78,7 @@
     <g transform="translate(20, 75)">
       <circle cx="10" cy="12" r="5" fill="#1E293B" />
       <text x="26" y="16" fill="#0F172A" font-size="13" font-weight="600">Trạng thái: Máy chủ Đang Lắng Nghe</text>
-      <text x="26" y="34" fill="#64748B" font-size="11">Cổng: 5173 • Ghép đôi: 123456</text>
+      <text x="26" y="34" fill="#64748B" font-size="11">TCP Port 8080 • REST JSON + SSE (/api/events)</text>
     </g>
 
     <rect x="20" y="130" width="340" height="40" rx="6" fill="#0F172A" /><text x="36" y="155" fill="#1E293B" font-size="13">📂 Mở Cửa Sổ Chính Server</text>

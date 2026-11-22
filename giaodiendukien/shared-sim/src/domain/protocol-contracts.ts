@@ -1,4 +1,5 @@
 import type {
+  AiScanPreset,
   AiScanResult,
   AlertsSummary,
   AnalyticsSnapshot,
@@ -84,8 +85,7 @@ export interface ConnectedClientSession {
 export type PacketDirection =
   | 'CLIENT->SERVER'
   | 'SERVER->CLIENT'
-  | 'SERVER->PUSH'
-  | 'DESKTOP->DB';
+  | 'SERVER->PUSH';
 
 export interface PacketLogEntry {
   id: string;
@@ -281,6 +281,17 @@ export interface GetAuditLogsResult {
   };
 }
 
+export interface CatalogReferenceCounts {
+  categories: Record<number, number>;
+  units: Record<number, number>;
+  locations: Record<number, number>;
+}
+
+export interface CatalogMetadataResult {
+  foods: Food[];
+  reference_counts: CatalogReferenceCounts;
+}
+
 export interface SaveCategoryPayload {
   category_id?: number;
   category_name: string;
@@ -336,6 +347,8 @@ export interface ProtocolRequestMap {
   GET_STATS: { req: GetStatsPayload | undefined; res: AnalyticsSnapshot };
   GET_AUDIT_LOGS: { req: AuditLogFilter | undefined; res: GetAuditLogsResult };
   GET_CATALOGS: { req: undefined; res: CatalogBundle };
+  GET_CATALOG_METADATA: { req: Record<string, never> | undefined; res: CatalogMetadataResult };
+  GET_AI_SCAN_PRESETS: { req: Record<string, never> | undefined; res: AiScanPreset[] };
   SAVE_CATEGORY: { req: SaveCategoryPayload; res: Category };
   DELETE_CATEGORY: { req: { category_id: number }; res: { deleted_id: number } };
   SAVE_UNIT: { req: SaveUnitPayload; res: Unit };

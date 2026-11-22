@@ -1,9 +1,10 @@
-"""TCP socket HTTP server for the family food-management project.
+"""TCP socket HTTP & SSE server for the family food-management project.
 
-This module deliberately uses only Python's standard library.  Business rules
-and SQLite access belong to ``server/core_services.py`` and
-``server/database.py`` respectively; this file only parses HTTP, routes requests,
-and returns JSON responses.
+Pure Controller / Network Layer (Python standard library only):
+- Never imports `server.database` directly.
+- Routes all REST calls to `server.core_services` (which delegates to `server.models`).
+- Streams live Server-Sent Events (`GET /api/events`) with `inventory_updated`
+  notifications whenever inventory or simulation state changes.
 
 Run from the repository root with::
 
@@ -16,6 +17,7 @@ import importlib
 import inspect
 import json
 import logging
+import queue
 import socket
 import sys
 import threading
@@ -34,6 +36,7 @@ RECV_SIZE = 4096
 MAX_HEADER_BYTES = 64 * 1024
 MAX_BODY_BYTES = 1024 * 1024
 CLIENT_TIMEOUT_SECONDS = 15
+SSE_HEARTBEAT_SECONDS = 15.0
 
 LOGGER = logging.getLogger("food_management.tcp_server")
 
@@ -47,7 +50,46 @@ class HttpRequestError(Exception):
 
 
 class ServiceUnavailableError(Exception):
-    """Raised when the team's core-services module is not ready yet."""
+    """Raised when the core-services module is not ready."""
+
+
+class SseBroker:
+    """Thread-safe fan-out broker for Server-Sent Events (SSE) clients."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._subscribers: list[queue.Queue[tuple[str, dict[str, Any]]]] = []
+
+    def subscribe(self) -> queue.Queue[tuple[str, dict[str, Any]]]:
+        sub_queue: queue.Queue[tuple[str, dict[str, Any]]] = queue.Queue(maxsize=128)
+        with self._lock:
+            self._subscribers.append(sub_queue)
+        return sub_queue
+
+    def unsubscribe(self, sub_queue: queue.Queue[tuple[str, dict[str, Any]]]) -> None:
+        with self._lock:
+            if sub_queue in self._subscribers:
+                self._subscribers.remove(sub_queue)
+
+    def publish(self, event_name: str, data: dict[str, Any]) -> int:
+        with self._lock:
+            subscribers = list(self._subscribers)
+        delivered = 0
+        for sub_queue in subscribers:
+            try:
+                sub_queue.put_nowait((event_name, data))
+                delivered += 1
+            except queue.Full:
+                pass
+        return delivered
+
+    @property
+    def subscriber_count(self) -> int:
+        with self._lock:
+            return len(self._subscribers)
+
+
+SSE_BROKER = SseBroker()
 
 
 def _utc_timestamp() -> str:
@@ -61,9 +103,11 @@ def _json_response(
     headers: dict[str, str] | None = None,
 ) -> bytes:
     """Build one complete HTTP/1.1 JSON response, including CORS headers."""
-    body = b"" if payload is None else json.dumps(
-        payload, ensure_ascii=False, separators=(",", ":"), default=str
-    ).encode("utf-8")
+    body = (
+        b""
+        if payload is None
+        else json.dumps(payload, ensure_ascii=False, separators=(",", ":"), default=str).encode("utf-8")
+    )
     reason = HTTPStatus(status).phrase if status in HTTPStatus._value2member_map_ else "Unknown"
     response_headers = {
         "Content-Type": "application/json; charset=utf-8",
@@ -71,7 +115,7 @@ def _json_response(
         "Connection": "close",
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, Cache-Control",
         "Access-Control-Max-Age": "86400",
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
@@ -82,6 +126,51 @@ def _json_response(
     head.extend(f"{key}: {value}\r\n" for key, value in response_headers.items())
     head.append("\r\n")
     return "".join(head).encode("ascii") + body
+
+
+def _format_sse_event(event_name: str, data: dict[str, Any]) -> bytes:
+    encoded_data = json.dumps(data, ensure_ascii=False, separators=(",", ":"), default=str)
+    return f"event: {event_name}\ndata: {encoded_data}\n\n".encode("utf-8")
+
+
+def _stream_sse(client_sock: socket.socket, client_address: tuple[str, int], request_id: str) -> None:
+    """Keep the TCP socket open and stream Server-Sent Events."""
+    sub_queue = SSE_BROKER.subscribe()
+    try:
+        client_sock.settimeout(None)
+        headers = (
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/event-stream; charset=utf-8\r\n"
+            "Cache-Control: no-cache\r\n"
+            "Connection: keep-alive\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "X-Accel-Buffering: no\r\n"
+            "\r\n"
+        ).encode("ascii")
+        client_sock.sendall(headers)
+        client_sock.sendall(
+            _format_sse_event(
+                "connected",
+                {
+                    "ok": True,
+                    "request_id": request_id,
+                    "timestamp": _utc_timestamp(),
+                    "message": "SSE stream connected",
+                },
+            )
+        )
+        LOGGER.info("%s GET /api/events -> 200 SSE connected", client_address[0])
+
+        while True:
+            try:
+                event_name, payload = sub_queue.get(timeout=SSE_HEARTBEAT_SECONDS)
+                client_sock.sendall(_format_sse_event(event_name, payload))
+            except queue.Empty:
+                client_sock.sendall(b": ping\n\n")
+    except OSError:
+        LOGGER.debug("SSE client disconnected: %s", client_address[0])
+    finally:
+        SSE_BROKER.unsubscribe(sub_queue)
 
 
 def _read_http_request(client_sock: socket.socket) -> tuple[str, str, dict[str, str], bytes]:
@@ -145,17 +234,16 @@ def _read_http_request(client_sock: socket.socket) -> tuple[str, str, dict[str, 
 
 
 def _load_core_services() -> Any:
-    """Import the teammate-owned service layer only when an API call needs it."""
+    """Import the service facade layer (`server.core_services`)."""
     project_root = str(Path(__file__).resolve().parent.parent)
     if project_root not in sys.path:
         sys.path.insert(0, project_root)
     try:
         return importlib.import_module("server.core_services")
     except ModuleNotFoundError as exc:
-        # Do not disguise an import error inside core_services as a missing file.
         if exc.name in {"server", "server.core_services"}:
             raise ServiceUnavailableError(
-                "Chưa có server/core_services.py. Hãy ghép Phần 2 để bật nghiệp vụ API."
+                "Chưa có server/core_services.py. Hãy kiểm tra tầng dịch vụ nghiệp vụ."
             ) from exc
         raise ServiceUnavailableError(
             f"Không thể nạp tầng nghiệp vụ do thiếu module: {exc.name}."
@@ -240,21 +328,55 @@ def _parse_json_body(body: bytes) -> dict[str, Any]:
     return value
 
 
+def _normalize_add_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(payload)
+    if "expiration_date" not in normalized and "expiry_date" in normalized:
+        normalized["expiration_date"] = normalized["expiry_date"]
+    if "notes" not in normalized and "note" in normalized:
+        normalized["notes"] = normalized["note"]
+    return normalized
+
+
+def _normalize_adjust_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(payload)
+    if "new_quantity" not in normalized and "quantity" in normalized:
+        normalized["new_quantity"] = normalized["quantity"]
+    return normalized
+
+
+def _normalize_date_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    date_val = (
+        payload.get("simulation_date")
+        or payload.get("new_date")
+        or payload.get("new_date_str")
+        or payload.get("date")
+    )
+    if not date_val:
+        raise HttpRequestError("Thiếu trường simulation_date (YYYY-MM-DD).")
+    return {"simulation_date": str(date_val), "new_date_str": str(date_val)}
+
+
 def _dispatch(method: str, path: str, query: dict[str, str], payload: dict[str, Any]) -> tuple[int, Any]:
-    """Route the agreed REST endpoints to the Part 2 business services."""
+    """Route REST endpoints strictly to `server.core_services`."""
     if method == "OPTIONS":
         return HTTPStatus.NO_CONTENT, None
 
     route_methods: dict[str, str] = {
+        "/api/status": "GET",
+        "/api/events": "GET",
+        "/api/catalogs": "GET",
         "/api/fefo": "GET",
         "/api/inventory": "GET",
+        "/api/alerts": "GET",
+        "/api/shopping-list": "GET",
+        "/api/recipes": "GET",
+        "/api/recipes/suggest": "GET",
+        "/api/audit-log": "GET",
+        "/api/simulation/date": "POST",
         "/api/food/add": "POST",
         "/api/food/use": "POST",
         "/api/food/adjust": "POST",
         "/api/food/delete": "POST",
-        "/api/alerts": "GET",
-        "/api/audit-log": "GET",
-        "/api/simulation/date": "POST",
     }
     expected_method = route_methods.get(path)
     if expected_method is None:
@@ -265,56 +387,122 @@ def _dispatch(method: str, path: str, query: dict[str, str], payload: dict[str, 
             "expected_method": expected_method,
         }
 
+    if path == "/api/events":
+        return HTTPStatus.OK, {
+            "ok": True,
+            "stream": "text/event-stream",
+            "event": "inventory_updated",
+            "subscribers": SSE_BROKER.subscriber_count,
+        }
+
     services = _load_core_services()
+
+    if path == "/api/status":
+        function = _find_service(services, ("get_status",))
+        return HTTPStatus.OK, _call_with_query(function, query)
+
+    if path == "/api/catalogs":
+        function = _find_service(services, ("get_catalogs", "get_metadata"))
+        return HTTPStatus.OK, _call_with_query(function, query)
+
     if path == "/api/fefo":
         function = _find_service(
             services,
             ("get_fefo_recommendations", "get_fefo_items", "get_fefo_list", "get_fefo"),
         )
         return HTTPStatus.OK, _call_with_query(function, query)
+
     if path == "/api/inventory":
         function = _find_service(
             services, ("get_inventory", "get_all_inventory", "list_food_items", "get_food_items")
         )
         return HTTPStatus.OK, _call_with_query(function, query)
-    if path == "/api/food/add":
-        function = _find_service(services, ("add_food", "add_food_item", "create_food_item"))
-        return HTTPStatus.CREATED, _call_with_payload(function, payload)
-    if path == "/api/food/use":
-        function = _find_service(services, ("use_food",))
-        item_id = payload.get("item_id")
-        quantity = payload.get("quantity", payload.get("quantity_used"))
-        reason = payload.get("reason", "")
-        if item_id is None or quantity is None:
-            raise HttpRequestError("JSON cần có item_id và quantity (hoặc quantity_used).")
-        try:
-            result = function(int(item_id), float(quantity), str(reason))
-        except (TypeError, ValueError) as exc:
-            raise HttpRequestError("item_id và quantity phải là số hợp lệ.") from exc
-        return HTTPStatus.OK, result
-    if path == "/api/food/adjust":
-        function = _find_service(
-            services, ("adjust_food", "adjust_food_quantity", "adjust_inventory")
-        )
-        return HTTPStatus.OK, _call_with_payload(function, payload)
-    if path == "/api/food/delete":
-        function = _find_service(
-            services, ("soft_delete_food", "delete_food", "delete_food_item")
-        )
-        return HTTPStatus.OK, _call_with_payload(function, payload)
+
     if path == "/api/alerts":
         function = _find_service(services, ("get_alerts", "get_inventory_alerts", "scan_alerts"))
         return HTTPStatus.OK, _call_with_query(function, query)
+
+    if path == "/api/shopping-list":
+        function = _find_service(services, ("get_shopping_list",))
+        return HTTPStatus.OK, _call_with_query(function, query)
+
+    if path == "/api/recipes":
+        function = _find_service(services, ("get_recipes", "get_all_recipes"))
+        return HTTPStatus.OK, _call_with_query(function, query)
+
+    if path == "/api/recipes/suggest":
+        function = _find_service(services, ("suggest_recipes",))
+        return HTTPStatus.OK, _call_with_query(function, query)
+
     if path == "/api/audit-log":
         function = _find_service(
             services, ("get_audit_log", "get_audit_logs", "list_inventory_transactions")
         )
         return HTTPStatus.OK, _call_with_query(function, query)
+
     if path == "/api/simulation/date":
         function = _find_service(
             services, ("set_simulation_date", "set_system_date", "update_simulation_date")
         )
-        return HTTPStatus.OK, _call_with_payload(function, payload)
+        norm_payload = _normalize_date_payload(payload)
+        result = _call_with_payload(function, norm_payload)
+        SSE_BROKER.publish(
+            "inventory_updated",
+            {"action": "simulation_date", "timestamp": _utc_timestamp(), "data": result},
+        )
+        return HTTPStatus.OK, result
+
+    if path == "/api/food/add":
+        function = _find_service(services, ("add_food_item", "add_food", "create_food_item"))
+        norm_payload = _normalize_add_payload(payload)
+        result = _call_with_payload(function, norm_payload)
+        SSE_BROKER.publish(
+            "inventory_updated",
+            {"action": "food_added", "timestamp": _utc_timestamp(), "data": result},
+        )
+        return HTTPStatus.CREATED, result
+
+    if path == "/api/food/use":
+        function = _find_service(services, ("use_food",))
+        item_id = payload.get("item_id")
+        quantity = payload.get("quantity", payload.get("quantity_used", payload.get("use_quantity")))
+        reason = payload.get("reason", "Nấu ăn hàng ngày")
+        actor_device = payload.get("actor_device", "Client")
+        if item_id is None or quantity is None:
+            raise HttpRequestError("JSON cần có item_id và quantity (hoặc quantity_used).")
+        try:
+            result = function(int(item_id), float(quantity), str(reason), str(actor_device))
+        except (TypeError, ValueError) as exc:
+            raise HttpRequestError(str(exc)) from exc
+        SSE_BROKER.publish(
+            "inventory_updated",
+            {"action": "food_used", "timestamp": _utc_timestamp(), "data": result},
+        )
+        return HTTPStatus.OK, result
+
+    if path == "/api/food/adjust":
+        function = _find_service(
+            services, ("adjust_food", "adjust_food_quantity", "adjust_inventory")
+        )
+        norm_payload = _normalize_adjust_payload(payload)
+        result = _call_with_payload(function, norm_payload)
+        SSE_BROKER.publish(
+            "inventory_updated",
+            {"action": "food_adjusted", "timestamp": _utc_timestamp(), "data": result},
+        )
+        return HTTPStatus.OK, result
+
+    if path == "/api/food/delete":
+        function = _find_service(
+            services, ("delete_food_item", "soft_delete_food", "delete_food")
+        )
+        result = _call_with_payload(function, payload)
+        SSE_BROKER.publish(
+            "inventory_updated",
+            {"action": "food_deleted", "timestamp": _utc_timestamp(), "data": result},
+        )
+        return HTTPStatus.OK, result
+
     return HTTPStatus.NOT_FOUND, {"error": "Không tìm thấy API.", "path": path}
 
 
@@ -323,15 +511,21 @@ def _handle_client(client_sock: socket.socket, client_address: tuple[str, int]) 
     started_at = datetime.now(timezone.utc)
     client_sock.settimeout(CLIENT_TIMEOUT_SECONDS)
     try:
-        method, target, headers, body = _read_http_request(client_sock)
+        method, target, _headers, body = _read_http_request(client_sock)
         parsed_target = urlsplit(target)
         path = parsed_target.path.rstrip("/") or "/"
         query = _unwrap_query(parse_qs(parsed_target.query, keep_blank_values=True))
+
+        if method == "GET" and path == "/api/events":
+            _stream_sse(client_sock, client_address, request_id)
+            return
+
         if method == "OPTIONS":
             status, result = HTTPStatus.NO_CONTENT, None
         else:
             payload = _parse_json_body(body) if method == "POST" else {}
             status, result = _dispatch(method, path, query, payload)
+
         response_payload = result
         if status >= 400:
             response_payload = {
@@ -342,6 +536,7 @@ def _handle_client(client_sock: socket.socket, client_address: tuple[str, int]) 
             }
             if isinstance(result, dict):
                 response_payload.update({k: v for k, v in result.items() if k != "error"})
+
         response = _json_response(int(status), response_payload)
         LOGGER.info("%s %s %s -> %s", client_address[0], method, path, status)
     except HttpRequestError as exc:
@@ -350,6 +545,12 @@ def _handle_client(client_sock: socket.socket, client_address: tuple[str, int]) 
             {"error": str(exc), "request_id": request_id},
         )
         LOGGER.warning("%s invalid request: %s", client_address[0], exc)
+    except ValueError as exc:
+        response = _json_response(
+            HTTPStatus.BAD_REQUEST,
+            {"error": str(exc), "request_id": request_id},
+        )
+        LOGGER.warning("%s validation error: %s", client_address[0], exc)
     except ServiceUnavailableError as exc:
         response = _json_response(
             HTTPStatus.SERVICE_UNAVAILABLE,

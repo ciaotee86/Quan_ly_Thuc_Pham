@@ -30,6 +30,7 @@ import type {
 import type {
   AdjustFoodPayload,
   CancelFoodItemPayload,
+  CatalogMetadataResult,
   CheckDuplicatePayload,
   CookRecipePayload,
   CookRecipeResult,
@@ -1064,6 +1065,7 @@ export function saveRecipe(
   const cleanedIngredients = payload.ingredients.map((ing, idx) => ({
     ...ing,
     ingredient_id: ing.ingredient_id || idx + 1,
+    food_id: ing.food_id ?? null,
     ingredient_name: ing.ingredient_name.trim(),
     unit_name: ing.unit_name.trim() || 'đơn vị',
     quantity: Number.isFinite(ing.quantity) && ing.quantity > 0 ? roundStockQuantity(ing.quantity) : 1,
@@ -1097,6 +1099,30 @@ export function saveRecipe(
   };
   state.recipes.push(created);
   return { ok: true, data: { ...created } };
+}
+
+export function getCatalogMetadata(state: HouseholdDatabaseState): CatalogMetadataResult {
+  const categories: Record<number, number> = {};
+  const units: Record<number, number> = {};
+  const locations: Record<number, number> = {};
+
+  for (const food of state.foods) {
+    categories[food.category_id] = (categories[food.category_id] ?? 0) + 1;
+    units[food.default_unit_id] = (units[food.default_unit_id] ?? 0) + 1;
+  }
+  for (const item of state.food_items) {
+    units[item.unit_id] = (units[item.unit_id] ?? 0) + 1;
+    locations[item.location_id] = (locations[item.location_id] ?? 0) + 1;
+  }
+
+  return {
+    foods: state.foods.map((f) => ({ ...f })),
+    reference_counts: {
+      categories,
+      units,
+      locations,
+    },
+  };
 }
 
 export function deleteRecipe(

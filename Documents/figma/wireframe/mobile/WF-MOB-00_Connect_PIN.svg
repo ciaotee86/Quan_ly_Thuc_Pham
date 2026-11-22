@@ -17,7 +17,7 @@
     </pattern>
   </defs>
   <rect width="100%" height="100%" fill="url(#wfGrid)" opacity="0.6" />
-  <!-- Wireframe Frame: MOB-00: Connect PIN [BLUEPRINT] -->
+  <!-- Wireframe Frame: MOB-00: Connect LAN Server [BLUEPRINT] -->
 
   <rect x="0" y="0" width="390" height="844" rx="44" fill="#0F172A" stroke="#94A3B8" stroke-width="3" />
   <rect x="135" y="10" width="120" height="30" rx="15" fill="#000" />
@@ -27,25 +27,25 @@
     <text x="155" y="58" fill="#0F172A" font-size="42">🥬</text>
 
     <text x="175" y="125" text-anchor="middle" fill="#0F172A" font-size="20" font-weight="700">[WIREFRAME] FoodManagement Client</text>
-    <text x="175" y="150" text-anchor="middle" fill="#64748B" font-size="13">Ghép nối với Desktop Server trong mạng LAN</text>
+    <text x="175" y="150" text-anchor="middle" fill="#64748B" font-size="13">Kết nối Desktop Server qua mạng LAN (:8080)</text>
 
     <g transform="translate(0, 190)">
-      <text x="10" y="18" fill="#64748B" font-size="12">ĐỊA CHỈ IP DESKTOP SERVER</text>
+      <text x="10" y="18" fill="#64748B" font-size="12">ĐỊA CHỈ IP / CỔNG DESKTOP SERVER</text>
       <rect x="0" y="28" width="350" height="46" rx="8" fill="#0F172A" stroke="#94A3B8" stroke-width="1" />
-      <text x="16" y="57" fill="#0284C7" font-size="15" font-weight="600">192.168.1.100 : 5174</text>
+      <text x="16" y="57" fill="#0284C7" font-size="15" font-weight="600">http://192.168.1.100:8080</text>
 
-      <text x="10" y="105" fill="#64748B" font-size="12">MÃ PIN GHÉP ĐÔI (6 CHỮ SỐ)</text>
+      <text x="10" y="105" fill="#64748B" font-size="12">GIAO THỨC &amp; KÊNH REALTIME</text>
       <rect x="0" y="115" width="350" height="46" rx="8" fill="#0F172A" stroke="#94A3B8" stroke-width="1" />
-      <text x="16" y="145" fill="#1E293B" font-size="18" font-weight="700" letter-spacing="8">1 2 3 4 5 6</text>
+      <text x="16" y="143" fill="#1E293B" font-size="13" font-weight="700">HTTP/1.1 + REST JSON + SSE (/api/events)</text>
 
       <g cursor="pointer" transform="translate(0, 190)">
         <rect x="0" y="0" width="350" height="50" rx="10" fill="#1E293B" filter="url(#shadow)" />
-        <text x="175" y="31" text-anchor="middle" fill="#0F172A" font-size="15" font-weight="700">KẾT NỐI SERVER (PING)</text>
+        <text x="175" y="31" text-anchor="middle" fill="#0F172A" font-size="14" font-weight="700">KIỂM TRA KẾT NỐI (/api/status)</text>
       </g>
 
       <g cursor="pointer" transform="translate(0, 255)">
-        <rect x="0" y="0" width="350" height="50" rx="10" fill="#0F172A" stroke="#0284C7" stroke-width="1" />
-        <text x="175" y="31" text-anchor="middle" fill="#0284C7" font-size="14" font-weight="600">📷 QUÉT MÃ QR TỪ MÀN HÌNH DESKTOP</text>
+        <rect x="0" y="0" width="350" height="50" rx="10" fill="#0F172A" stroke="#64748B" stroke-width="1" stroke-dasharray="4 3" />
+        <text x="175" y="31" text-anchor="middle" fill="#64748B" font-size="13" font-weight="600">📷 QUÉT QR LAN [Future Scope]</text>
       </g>
     </g>
   </g>

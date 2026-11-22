@@ -77,6 +77,12 @@
   --status-expired-bg:     #FEE2E2;
   --status-expired-border: #FCA5A5;
 
+  /* Cạn kho (Low Stock: current_quantity <= min_threshold — Tím than) */
+  --status-lowstock-ink:    #312E81;
+  --status-lowstock-base:   #4338CA;
+  --status-lowstock-bg:     #E0E7FF;
+  --status-lowstock-border: #818CF8;
+
   --status-info-ink:    #1E40AF;
   --status-info-base:   #1D4ED8;
   --status-info-bg:     #DBEAFE;
@@ -330,6 +336,12 @@ button {
   color: var(--status-expired-ink);
   background-color: var(--status-expired-bg);
   border-color: var(--status-expired-border);
+}
+
+.badge-lowstock {
+  color: var(--status-lowstock-ink);
+  background-color: var(--status-lowstock-bg);
+  border-color: var(--status-lowstock-border);
 }
 
 .badge-empty {

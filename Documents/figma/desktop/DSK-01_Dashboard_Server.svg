@@ -21,9 +21,9 @@
     <circle cx="42" cy="22" r="6" fill="#F59E0B" />
     <circle cx="60" cy="22" r="6" fill="#10B981" />
     <text x="84" y="27" fill="#64748B" font-size="13" font-weight="500">QUẢN LÝ THỰC PHẨM GIA ĐÌNH &amp; ĐỀ XUẤT FEFO — SERVER WORKBENCH (Desktop App)</text>
-    <rect x="1260" y="10" width="160" height="24" rx="12" fill="#1E293B" />
-    <circle cx="1275" cy="22" r="4" fill="#10B981" />
-    <text x="1288" y="26" fill="#10B981" font-size="12" font-weight="600">Port 5173 • Online</text>
+    <rect x="1245" y="10" width="175" height="24" rx="12" fill="#1E293B" />
+    <circle cx="1260" cy="22" r="4" fill="#10B981" />
+    <text x="1273" y="26" fill="#10B981" font-size="12" font-weight="600">TCP Port 8080 • Online</text>
 
     <!-- Top App Navigation Bar -->
     <rect x="0" y="44" width="1440" height="52" fill="#0F172A" />
@@ -107,8 +107,8 @@
       <rect x="0" y="0" width="228" height="80" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
       <circle cx="20" cy="24" r="6" fill="#10B981" />
       <text x="36" y="28" fill="#E2E8F0" font-size="13" font-weight="600">Dịch vụ nền Desktop</text>
-      <text x="36" y="48" fill="#94A3B8" font-size="11">Giao thức: Simulated RPC</text>
-      <text x="36" y="66" fill="#38BDF8" font-size="11">PIN ghép đôi: 123456</text>
+      <text x="36" y="48" fill="#94A3B8" font-size="11">HTTP/1.1 + REST JSON + SSE</text>
+      <text x="36" y="66" fill="#38BDF8" font-size="11">TCP :8080 • /api/events</text>
     </g>
 
     <!-- Content Area Background -->
@@ -118,86 +118,95 @@
     <!-- Header -->
     <text x="0" y="24" fill="#F8FAFC" font-size="22" font-weight="700">Bảng Điều Khiển Tổng Quan (Server Dashboard)</text>
     <text x="0" y="48" fill="#94A3B8" font-size="13">Hệ thống gợi ý FEFO &amp; giám sát luồng hàng hóa thời gian thực</text>
+    <!-- 4-Level Color-Coded Lifecycle Legend -->
+    <g transform="translate(650, 26)">
+      <rect x="0" y="0" width="102" height="24" rx="12" fill="#064E3B" stroke="#10B981" stroke-width="1" /><text x="51" y="16" text-anchor="middle" fill="#6EE7B7" font-size="11" font-weight="700">● An toàn (&gt;3d)</text>
+      <rect x="110" y="0" width="122" height="24" rx="12" fill="#78350F" stroke="#F59E0B" stroke-width="1" /><text x="171" y="16" text-anchor="middle" fill="#FCD34D" font-size="11" font-weight="700">⏳ Cận hạn (1-3d)</text>
+      <rect x="240" y="0" width="122" height="24" rx="12" fill="#7F1D1D" stroke="#EF4444" stroke-width="1" /><text x="301" y="16" text-anchor="middle" fill="#FCA5A5" font-size="11" font-weight="700">! Hết hạn • Hủy</text>
+      <rect x="370" y="0" width="110" height="24" rx="12" fill="#312E81" stroke="#818CF8" stroke-width="1" /><text x="425" y="16" text-anchor="middle" fill="#E0E7FF" font-size="11" font-weight="700">◆ Cạn kho (≤min)</text>
+    </g>
 
     <!-- 4 KPI Cards -->
     <g id="KPI_Row" transform="translate(0, 70)">
       <rect x="0" y="0" width="265" height="100" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" filter="url(#shadow)" />
       <text x="20" y="30" fill="#94A3B8" font-size="13">Tổng mặt hàng trong kho</text>
       <text x="20" y="68" fill="#F8FAFC" font-size="32" font-weight="700">15</text>
-      <rect x="180" y="20" width="65" height="24" rx="12" fill="#0F766E" />
-      <text x="194" y="36" fill="#FFF" font-size="11" font-weight="600">16 Lô tồn</text>
-      <text x="20" y="88" fill="#10B981" font-size="11">8 danh mục • 8 vị trí</text>
+      <rect x="180" y="20" width="65" height="24" rx="12" fill="#064E3B" />
+      <text x="194" y="36" fill="#6EE7B7" font-size="11" font-weight="600">16 Lô tồn</text>
+      <text x="20" y="88" fill="#10B981" font-size="11">An toàn (&gt; 3 ngày): 11 lô</text>
 
-      <rect x="285" y="0" width="265" height="100" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" filter="url(#shadow)" />
-      <text x="305" y="30" fill="#94A3B8" font-size="13">Lô cần dùng gấp (FEFO)</text>
+      <rect x="285" y="0" width="265" height="100" rx="10" fill="#1E293B" stroke="#F59E0B" stroke-width="1" filter="url(#shadow)" />
+      <text x="305" y="30" fill="#94A3B8" font-size="13">Cận hạn FEFO Cấp 1</text>
       <text x="305" y="68" fill="#F59E0B" font-size="32" font-weight="700">3</text>
-      <rect x="465" y="20" width="65" height="24" rx="12" fill="#78350F" />
-      <text x="477" y="36" fill="#FCD34D" font-size="11" font-weight="600">&lt; 3 Ngày</text>
-      <text x="305" y="88" fill="#FCD34D" font-size="11">Ưu tiên chế biến trong ngày</text>
+      <rect x="455" y="20" width="78" height="24" rx="12" fill="#78350F" />
+      <text x="464" y="36" fill="#FCD34D" font-size="11" font-weight="600">⏳ 1–3 Ngày</text>
+      <text x="305" y="88" fill="#FCD34D" font-size="11">⏳ Ưu tiên chế biến ngay</text>
 
-      <rect x="570" y="0" width="265" height="100" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" filter="url(#shadow)" />
-      <text x="590" y="30" fill="#94A3B8" font-size="13">Cảnh báo hết hạn / Đã hết</text>
+      <rect x="570" y="0" width="265" height="100" rx="10" fill="#1E293B" stroke="#EF4444" stroke-width="1" filter="url(#shadow)" />
+      <text x="590" y="30" fill="#94A3B8" font-size="13">Nguy cấp / Hết hạn</text>
       <text x="590" y="68" fill="#EF4444" font-size="32" font-weight="700">2</text>
-      <rect x="750" y="20" width="65" height="24" rx="12" fill="#7F1D1D" />
-      <text x="760" y="36" fill="#FCA5A5" font-size="11" font-weight="600">Nguy cấp</text>
-      <text x="590" y="88" fill="#F87171" font-size="11">Cần loại bỏ / thanh lý ngay</text>
+      <rect x="745" y="20" width="72" height="24" rx="12" fill="#7F1D1D" />
+      <text x="755" y="36" fill="#FCA5A5" font-size="11" font-weight="600">! Tiêu hủy</text>
+      <text x="590" y="88" fill="#F87171" font-size="11">Quá hạn / hết hôm nay — hủy bỏ</text>
 
-      <rect x="855" y="0" width="275" height="100" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" filter="url(#shadow)" />
-      <text x="875" y="30" fill="#94A3B8" font-size="13">Cần mua sắm bổ sung</text>
-      <text x="875" y="68" fill="#38BDF8" font-size="32" font-weight="700">4</text>
-      <rect x="1035" y="20" width="75" height="24" rx="12" fill="#0369A1" />
-      <text x="1047" y="36" fill="#BAE6FD" font-size="11" font-weight="600">Dưới mức</text>
-      <text x="875" y="88" fill="#38BDF8" font-size="11">Dưới định mức tồn tối thiểu</text>
+      <rect x="855" y="0" width="275" height="100" rx="10" fill="#1E293B" stroke="#818CF8" stroke-width="1" filter="url(#shadow)" />
+      <text x="875" y="30" fill="#94A3B8" font-size="13">Cạn kho (≤ min_threshold)</text>
+      <text x="875" y="68" fill="#A5B4FC" font-size="32" font-weight="700">4</text>
+      <rect x="1030" y="20" width="84" height="24" rx="12" fill="#312E81" />
+      <text x="1042" y="36" fill="#E0E7FF" font-size="11" font-weight="600">◆ Cạn kho</text>
+      <text x="875" y="88" fill="#A5B4FC" font-size="11">Cần mua thêm bổ sung</text>
     </g>
 
     <!-- Charts & FEFO Table Row -->
     <g id="Charts_Row" transform="translate(0, 190)">
       <rect x="0" y="0" width="680" height="320" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" />
       <text x="24" y="34" fill="#F8FAFC" font-size="16" font-weight="700">Danh Sách Thực Phẩm FEFO Ưu Tiên Dùng Trước</text>
-      <text x="24" y="54" fill="#94A3B8" font-size="12">Sắp xếp theo hạn dùng tăng dần (First Expired First Out)</text>
+      <text x="24" y="54" fill="#94A3B8" font-size="12">Chuẩn 4 màu vòng đời: An toàn · ⏳ Cận hạn (1-3d) · Hết hạn (≤0d) · Cạn kho</text>
       
       <rect x="20" y="70" width="640" height="34" rx="6" fill="#334155" />
-      <text x="36" y="92" fill="#CBD5E1" font-size="12" font-weight="600">MÃ LÔ</text>
-      <text x="120" y="92" fill="#CBD5E1" font-size="12" font-weight="600">TÊN THỰC PHẨM</text>
-      <text x="270" y="92" fill="#CBD5E1" font-size="12" font-weight="600">SỐ LƯỢNG TỒN</text>
-      <text x="400" y="92" fill="#CBD5E1" font-size="12" font-weight="600">HẠN DÙNG</text>
-      <text x="510" y="92" fill="#CBD5E1" font-size="12" font-weight="600">TRẠNG THÁI FEFO</text>
+      <text x="36" y="92" fill="#CBD5E1" font-size="12" font-weight="600">item_id</text>
+      <text x="120" y="92" fill="#CBD5E1" font-size="12" font-weight="600">food_name</text>
+      <text x="270" y="92" fill="#CBD5E1" font-size="12" font-weight="600">current_qty</text>
+      <text x="385" y="92" fill="#CBD5E1" font-size="12" font-weight="600">expiration_date</text>
+      <text x="510" y="92" fill="#CBD5E1" font-size="12" font-weight="600">TRẠNG THÁI 4 CẤP</text>
       
-      <!-- Row 1 -->
+      <!-- Row 1: Expired (Đỏ rực) -->
       <rect x="20" y="110" width="640" height="44" rx="4" fill="#0F172A" />
-      <text x="36" y="136" fill="#38BDF8" font-size="13" font-weight="600">LOT-001</text>
-      <text x="120" y="136" fill="#FFF" font-size="13" font-weight="600">Sữa tươi thanh trùng</text>
-      <text x="270" y="136" fill="#94A3B8" font-size="13">2 hộp (900 ml)</text>
-      <text x="400" y="136" fill="#F87171" font-size="13">16/11/2026 (Còn 1d)</text>
-      <rect x="510" y="122" width="90" height="22" rx="4" fill="#7F1D1D" />
-      <text x="522" y="137" fill="#FCA5A5" font-size="11" font-weight="700">DÙNG HÔM NAY</text>
+      <text x="36" y="136" fill="#38BDF8" font-size="13" font-weight="600">#0 (TP000)</text>
+      <text x="120" y="136" fill="#FFF" font-size="13" font-weight="600">Sữa chua không đường</text>
+      <text x="270" y="136" fill="#94A3B8" font-size="13">2 hộp (200 g)</text>
+      <text x="385" y="136" fill="#F87171" font-size="13">15/11/2026 (0d)</text>
+      <rect x="510" y="122" width="132" height="22" rx="4" fill="#7F1D1D" />
+      <text x="520" y="137" fill="#FCA5A5" font-size="11" font-weight="700">HẾT HẠN • TIÊU HỦY</text>
 
-      <!-- Row 2 -->
+      <!-- Row 2: Cận hạn 1-3d (Vàng cam + ⏳) -->
       <rect x="20" y="160" width="640" height="44" rx="4" fill="#1E293B" />
-      <text x="36" y="186" fill="#38BDF8" font-size="13" font-weight="600">LOT-003</text>
-      <text x="120" y="186" fill="#FFF" font-size="13" font-weight="600">Thịt bò phi lê</text>
-      <text x="270" y="186" fill="#94A3B8" font-size="13">500 g</text>
-      <text x="400" y="186" fill="#FBBF24" font-size="13">17/11/2026 (Còn 2d)</text>
-      <rect x="510" y="172" width="80" height="22" rx="4" fill="#78350F" />
-      <text x="522" y="187" fill="#FCD34D" font-size="11" font-weight="700">DÙNG GẤP</text>
+      <text x="36" y="186" fill="#38BDF8" font-size="13" font-weight="600">#1 (TP001)</text>
+      <text x="120" y="186" fill="#FFF" font-size="13" font-weight="600">Sữa tươi thanh trùng</text>
+      <text x="270" y="186" fill="#94A3B8" font-size="13">2 hộp (900 ml)</text>
+      <text x="385" y="186" fill="#FBBF24" font-size="13">16/11/2026 (Còn 1d)</text>
+      <rect x="510" y="172" width="122" height="22" rx="4" fill="#78350F" />
+      <text x="520" y="187" fill="#FCD34D" font-size="11" font-weight="700">⏳ CẬN HẠN (1d)</text>
 
-      <!-- Row 3 -->
+      <!-- Row 3: Cận hạn 1-3d (Vàng cam + ⏳) -->
       <rect x="20" y="210" width="640" height="44" rx="4" fill="#0F172A" />
-      <text x="36" y="236" fill="#38BDF8" font-size="13" font-weight="600">LOT-004</text>
-      <text x="120" y="236" fill="#FFF" font-size="13" font-weight="600">Rau cải thìa</text>
-      <text x="270" y="236" fill="#94A3B8" font-size="13">300 g</text>
-      <text x="400" y="236" fill="#FBBF24" font-size="13">18/11/2026 (Còn 3d)</text>
-      <rect x="510" y="222" width="70" height="22" rx="4" fill="#78350F" />
-      <text x="522" y="237" fill="#FCD34D" font-size="11" font-weight="700">CẢNH BÁO</text>
+      <text x="36" y="236" fill="#38BDF8" font-size="13" font-weight="600">#3 (TP003)</text>
+      <text x="120" y="236" fill="#FFF" font-size="13" font-weight="600">Thịt bò phi lê</text>
+      <text x="270" y="236" fill="#94A3B8" font-size="13">500 g</text>
+      <text x="385" y="236" fill="#FBBF24" font-size="13">17/11/2026 (Còn 2d)</text>
+      <rect x="510" y="222" width="122" height="22" rx="4" fill="#78350F" />
+      <text x="520" y="237" fill="#FCD34D" font-size="11" font-weight="700">⏳ CẬN HẠN (2d)</text>
 
-      <!-- Row 4 -->
+      <!-- Row 4: An toàn > 3d + Cạn kho indicator -->
       <rect x="20" y="260" width="640" height="44" rx="4" fill="#1E293B" />
-      <text x="36" y="286" fill="#38BDF8" font-size="13" font-weight="600">LOT-008</text>
+      <text x="36" y="286" fill="#38BDF8" font-size="13" font-weight="600">#8 (TP008)</text>
       <text x="120" y="286" fill="#FFF" font-size="13" font-weight="600">Trứng gà ta</text>
-      <text x="270" y="286" fill="#94A3B8" font-size="13">10 quả</text>
-      <text x="400" y="286" fill="#34D399" font-size="13">22/11/2026 (Còn 7d)</text>
-      <rect x="510" y="272" width="65" height="22" rx="4" fill="#064E3B" />
-      <text x="522" y="287" fill="#6EE7B7" font-size="11" font-weight="700">ỔN ĐỊNH</text>
+      <text x="270" y="286" fill="#A5B4FC" font-size="13">4 quả (≤ min)</text>
+      <text x="385" y="286" fill="#34D399" font-size="13">22/11/2026 (Còn 7d)</text>
+      <rect x="510" y="272" width="66" height="22" rx="4" fill="#064E3B" />
+      <text x="518" y="287" fill="#6EE7B7" font-size="11" font-weight="700">AN TOÀN</text>
+      <rect x="582" y="272" width="68" height="22" rx="4" fill="#312E81" />
+      <text x="590" y="287" fill="#E0E7FF" font-size="11" font-weight="700">CẠN KHO</text>
 
       <!-- Right: Category Distribution Chart (Width: 430) -->
       <g transform="translate(700, 0)">
@@ -226,19 +235,19 @@
     <g id="Bottom_Row" transform="translate(0, 530)">
       <rect x="0" y="0" width="1130" height="150" rx="10" fill="#1E293B" stroke="#334155" stroke-width="1" />
       <text x="24" y="30" fill="#F8FAFC" font-size="15" font-weight="700">Nhật Ký Tương Tác Client–Server Trực Tiếp</text>
-      <text x="24" y="50" fill="#94A3B8" font-size="12">BroadcastChannel RPC Socket Events</text>
+      <text x="24" y="50" fill="#94A3B8" font-size="12">HTTP/1.1 + REST JSON + SSE (/api/events)</text>
 
       <g transform="translate(24, 65)">
         <circle cx="6" cy="12" r="4" fill="#10B981" />
-        <text x="20" y="16" fill="#94A3B8" font-size="12">[22:30:15] <tspan fill="#38BDF8">Mobile_Client_1 (192.168.1.5)</tspan>: Gửi lệnh <tspan fill="#FFF">USE_FOOD (Trừ 200g Thịt bò phi lê)</tspan> -&gt; Thành công (Mã GD: TXN-015)</text>
+        <text x="20" y="16" fill="#94A3B8" font-size="12">[22:30:15] <tspan fill="#38BDF8">Mobile_Client_1 (192.168.1.5)</tspan>: Gửi <tspan fill="#FFF">POST /api/food/use (Trừ 200g Thịt bò phi lê)</tspan> -&gt; 200 OK (TXN-015)</text>
       </g>
       <g transform="translate(24, 95)">
         <circle cx="6" cy="12" r="4" fill="#38BDF8" />
-        <text x="20" y="16" fill="#94A3B8" font-size="12">[22:32:00] <tspan fill="#38BDF8">Desktop_Server</tspan>: Kích hoạt <tspan fill="#F59E0B">Time Simulation (+3 ngày)</tspan> -&gt; Cập nhật lại 3 cảnh báo hết hạn</text>
+        <text x="20" y="16" fill="#94A3B8" font-size="12">[22:32:00] <tspan fill="#38BDF8">Desktop_Server</tspan>: Kích hoạt <tspan fill="#F59E0B">POST /api/simulation/date (+3 ngày)</tspan> -&gt; Phát SSE cập nhật 3 cảnh báo</text>
       </g>
       <g transform="translate(24, 125)">
         <circle cx="6" cy="12" r="4" fill="#10B981" />
-        <text x="20" y="16" fill="#94A3B8" font-size="12">[22:35:40] <tspan fill="#38BDF8">Mobile_Client_2</tspan>: Kết nối PING_HANDSHAKE với mã PIN hợp lệ (123456) -&gt; Đã xác thực</text>
+        <text x="20" y="16" fill="#94A3B8" font-size="12">[22:35:40] <tspan fill="#38BDF8">Mobile_Client_2 (192.168.1.8)</tspan>: Kết nối IP/LAN :8080 (GET /api/status + SSE /api/events) -&gt; Đã đồng bộ</text>
       </g>
     </g>
   </g>

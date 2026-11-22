@@ -3,22 +3,22 @@
 **Nguồn đặc tả chính thức:**
 - [Phân rã chức năng.txt](file:///d:/SourceCode/lập%20trình%20mạng/Quan_ly_Thuc_Pham/docs/Phân%20rã%20chức%20năng.txt)
 - [LTMQuanLyThucPhamGiaDinh.docx](file:///d:/SourceCode/lập%20trình%20mạng/Quan_ly_Thuc_Pham/docs/LTMQuanLyThucPhamGiaDinh.docx)
-- [food_management.sql](file:///d:/SourceCode/lập%20trình%20mạng/food_management.sql)
+- [database/schema.sql](file:///d:/SourceCode/lập%20trình%20mạng/Quan_ly_Thuc_Pham/database/schema.sql) *(SQLite 3NF — 8 bảng & 2 Views)*
 - Ma trận ánh xạ (`ma_tran_1_input_modules.png`, `ma_tran_2a_luong_modules.png`, `ma_tran_2b_modules_csdl.png`) và Lưu đồ chuẩn hóa (`sơ đồ các luồng - chuẩn hóa.docx`)
 
-**Trạng thái:** `CHỜ PHÊ DUYỆT` *(Chưa triển khai Prototype / Chưa viết code giao diện)*
+**Trạng thái:** `ĐÃ ĐỒNG BỘ SQLITE 3NF, TCP SOCKET :8080 + SSE & FIGMA (QT-01..QT-05, QT-07)`
 
 ---
 
 ## 1. TỔNG QUAN CẤU TRÚC GIAO DIỆN & PHÂN TÍCH TÀI LIỆU
 
 ### 1.1. Kết quả phân tích phạm vi tài liệu
-Dựa trên đối chiếu toàn bộ cây phân rã chức năng trong `Phân rã chức năng.txt`, 12 yêu cầu chức năng (`FR-01` → `FR-12`), 8 thực thể (`ENT-01` → `ENT-08`), 7 module (`M01` → `M07`), 5 luồng dữ liệu (`D1` → `D5`) và lược đồ CSDL `food_management.sql`, phạm vi nghiệp vụ của hệ thống gồm **4 khối chức năng chính**:
+Dựa trên đối chiếu toàn bộ cây phân rã chức năng trong `Phân rã chức năng.txt`, 12 yêu cầu chức năng (`FR-01` → `FR-12`), 8 thực thể (`ENT-01` → `ENT-08`), 7 module (`M01` → `M07`), 5 luồng dữ liệu (`D1` → `D5`) và lược đồ CSDL SQLite 3NF `database/schema.sql`, phạm vi nghiệp vụ của hệ thống gồm **4 khối chức năng chính**:
 
 | Khối / Phân hệ | Phạm vi từ tài liệu nguồn | Chức năng cốt lõi |
 |---|---|---|
-| **PH-01: Đề xuất dùng trước (FEFO) & Gợi ý món ăn** | Cây `1.1` → `1.6`; `MOD-03`; `M03`; `D3`; `FR-08`, `FR-09`, `FR-10`; Đầu ra `1` | Lọc thực phẩm tồn kho (`status = 'Đang sử dụng'`, `SL > 0`); tính `DaysRemaining`; cô lập món quá hạn; xếp hạng FEFO (`expiration_date ASC`) + FIFO tie-breaker (`import_date ASC`); phân nhóm 3 mức ưu tiên (Cao / Trung bình / Thấp); giải trình lý do; gợi ý món ăn phù hợp từ `recipes`; cập nhật tức thời khi có biến động kho/HSD. |
-| **PH-02: Quản lý Thực phẩm, Tồn kho & Tìm kiếm** | Cây `2.1` → `2.8`; `MOD-02`, `MOD-05`; `M01`, `M02`, `M05`; `D1`, `D2`, `D5`; `FR-01`–`FR-07`, `FR-12`; Đầu ra `2`, `6`, `7` | Thêm mới / nhập lô hàng (12 trường `IN01`–`IN12`, kiểm tra trùng `2.1.10`, hỗ trợ điền sẵn từ AI Vision Scan); sửa thông tin/HSD/vị trí; xuất dùng qua `sp_use_food`; nhập thêm & kiểm kê điều chỉnh; thanh lý/xóa mềm bảo toàn lịch sử (`2.3`, `FR-06`); tìm kiếm từ khóa + lọc 5 tiêu chí (`2.8.3`–`2.8.7`). |
+| **PH-01: Đề xuất dùng trước (FEFO) & Gợi ý món ăn** | Cây `1.1` → `1.6`; `MOD-03`; `M03`; `D3`; `FR-08`, `FR-09`, `FR-10`; Đầu ra `1` | Lọc thực phẩm tồn kho (`status = 'ACTIVE'`, `SL > 0`); tính `DaysRemaining`; cô lập món quá hạn; xếp hạng FEFO 3 cấp (`expiration_date ASC`, FIFO `import_date ASC`, lô dở dang tồn ít); giải trình lý do; gợi ý món ăn phù hợp từ `recipes` (Match Score `+30%` cận hạn, bỏ qua gia vị cơ bản); cập nhật tức thời khi có biến động kho/HSD. |
+| **PH-02: Quản lý Thực phẩm, Tồn kho & Tìm kiếm** | Cây `2.1` → `2.8`; `MOD-02`, `MOD-05`; `M01`, `M02`, `M05`; `D1`, `D2`, `D5`; `FR-01`–`FR-07`, `FR-12`; Đầu ra `2`, `6`, `7` | Thêm mới / nhập lô hàng (`POST /api/food/add`, kiểm tra trùng `2.1.10`, AI Vision Scan gắn `[Future Scope]`); sửa thông tin/HSD/vị trí; xuất dùng qua `POST /api/food/use` (`core_services.use_food`, hỗ trợ Quick Use `-1` 1 chạm); nhập thêm & kiểm kê điều chỉnh (`POST /api/food/adjust`); thanh lý/xóa mềm bảo toàn lịch sử (`POST /api/food/delete`); tìm kiếm từ khóa + lọc đa tiêu chí (`GET /api/inventory`). |
 | **PH-03: Cảnh báo, Thống kê, Audit Log & Quản trị Danh mục/Cài đặt** | `Phân rã chức năng.txt` (Cài đặt ban đầu + Đầu ra `2b`, `3`, `4`, `5`); `MOD-01`, `MOD-04`, `MOD-06`; `M04`, `M06`, `M07`; `D4`; `FR-11` | Quét & phát cảnh báo kép (hết hạn / sắp hết hạn; tồn kho $\le$ `min_threshold` kèm danh sách cần mua bổ sung); Dashboard & thống kê theo thời gian, theo khu vực/vị trí; Nhật ký biến động (`inventory_transactions`); Quản trị danh mục (Loại, Đơn vị, Vị trí 2 cấp); Cấu hình hệ thống (`system_settings`: múi giờ, ngày hệ thống/mô phỏng, ngưỡng cảnh báo HSD, ngưỡng min mặc định, quy tắc FEFO). |
 | **PH-04: Vận hành & Giao tiếp Client–Server** *(Từ bối cảnh hệ thống Desktop Server – Mobile Client)* | Bối cảnh đề bài Client–Server | Desktop Server vận hành dịch vụ lắng nghe mạng & quét nền tự động (System Tray + Server Monitor); Mobile Client thiết lập kết nối IP/Port tới Server, gửi yêu cầu nghiệp vụ, nhận phản hồi/đồng bộ cảnh báo và xử lý ngoại lệ mạng. *(Không thêm nghiệp vụ ngoài tài liệu).* |
 
@@ -27,13 +27,14 @@ Tài liệu đặc tả các cụm đối tượng gồm **Quản trị viên b�
 
 | Vai trò | Thiết bị sử dụng | Quyền hạn & Phạm vi thao tác |
 |---|---|---|
-| **Quản trị viên gia đình / Vận hành Server** | **Desktop Server** *(và có thể dùng Mobile như thành viên)* | • Khởi động/tạm dừng/giám sát dịch vụ Server, cấu hình mạng (Port, mã ghép nối), chạy nền System Tray.<br>• Toàn quyền quản trị danh mục nền tảng (`categories`, `units`, `storage_locations`, `recipes`).<br>• Toàn quyền cấu hình `system_settings` (múi giờ, ngày hệ thống / mô phỏng thời gian, ngưỡng cảnh báo HSD, ngưỡng min mặc định, quy tắc FEFO).<br>• Xem Dashboard thống kê tổng thể, nhật ký giao dịch kho (Audit Log) toàn hệ thống, tra cứu và thực hiện mọi nghiệp vụ kho (thêm, sửa, xuất dùng, kiểm kê, thanh lý/xóa mềm). |
-| **Thành viên gia đình / Người nội trợ** | **Mobile Client** | • Kết nối vào Desktop Server trong mạng nội bộ/mạng cho phép.<br>• Xem ưu tiên FEFO hôm nay, lý do đề xuất và công thức món ăn gợi ý.<br>• Xem cảnh báo hết hạn / sắp hết hạn và danh sách cần mua bổ sung.<br>• Tìm kiếm, lọc 5 tiêu chí và xem chi tiết đồ trong tủ lạnh/nhà bếp.<br>• Thao tác nghiệp vụ bếp hàng ngày: chụp/chọn ảnh quét AI để thêm thực phẩm mới mua, xuất dùng khi nấu ăn, nhập thêm khi đi chợ về, kiểm kê nhanh, đổi vị trí ngăn tủ, đánh dấu vứt hủy/thanh lý món hỏng.<br>• Xem thống kê gọn và lịch sử biến động (chỉ đọc đối với danh mục/cấu hình hệ thống từ Server — *xem Mục 8 để chốt phân quyền chi tiết*). |
+| **Admin (Quản trị viên & Vận hành Server)** | **Desktop Admin Client** *(chỉ dành cho Admin quản lý & thao tác với Server `:8080`)* | • Khởi động/tạm dừng/giám sát dịch vụ Python Server (`0.0.0.0:8080`), cấu hình mạng (Host/Port/CORS), chạy nền System Tray.<br>• Toàn quyền quản trị danh mục nền tảng (`categories`, `units`, `storage_locations`, `recipes`).<br>• Toàn quyền cấu hình `system_settings` (múi giờ, ngày hệ thống / mô phỏng thời gian, ngưỡng cảnh báo HSD, ngưỡng min mặc định, quy tắc FEFO).<br>• Xem Dashboard thống kê tổng thể, nhật ký giao dịch kho (Audit Log) toàn hệ thống, tra cứu và thực hiện các thao tác quản trị & hiệu chỉnh kho trên Desktop Admin Client. |
+| **Người dùng cuối (Thành viên gia đình / Người nội trợ)** | **Mobile Client** *(người dùng chỉ dùng và thao tác trên điện thoại)* | • Kết nối vào Python Server (`:8080`) qua HTTP/1.1 REST JSON & Realtime SSE trong mạng nội bộ/mạng cho phép.<br>• Xem ưu tiên FEFO hôm nay, lý do đề xuất và công thức món ăn gợi ý.<br>• Xem cảnh báo hết hạn / sắp hết hạn / tồn thấp và danh sách cần mua bổ sung (gom 3 quầy).<br>• Tìm kiếm, lọc 5 tiêu chí và xem chi tiết đồ trong tủ lạnh/nhà bếp.<br>• Thao tác nghiệp vụ bếp hàng ngày trên điện thoại: thêm thực phẩm mới mua *(quét ảnh AI thuộc `[Future Scope]`)*, xuất dùng nhanh (`-1` / tùy chỉnh), nhập thêm, kiểm kê nhanh, đổi vị trí ngăn tủ, đánh dấu vứt hủy/thanh lý món hỏng.<br>• Xem thống kê gọn và lịch sử biến động (chỉ đọc đối với danh mục/cấu hình hệ thống từ Server — *xem Mục 8 để chốt phân quyền chi tiết*). |
 
 ### 1.3. Phân chia chức năng: Desktop Server vs. Mobile Client vs. Tương tác hai phía
 
-1. **Chức năng chuyên biệt của Desktop Server (Quản trị, Lưu trữ, Thực thi lõi & Giám sát)**:
-   - Tiếp nhận, xác thực cấu trúc và xử lý toàn bộ truy vấn/lệnh ghi vào CSDL MySQL (`sp_use_food`, `trg_after_inventory_transaction`, `view_fefo_recommendations`, `view_alerts`).
+1. **Chức năng chuyên biệt của Server & Desktop Admin Client (`Quản trị, Lưu trữ, Xử lý Model & Giám sát`)**:
+   - **Python Server (`server/tcp_server.py :8080`)**: Tiếp nhận, xác thực cấu trúc HTTP/JSON và điều phối Request/Response; **Tầng Model (`server/models/*`)** đảm nhận toàn bộ xử lý dữ liệu, thuật toán FEFO (`FoodInventoryModel`), ghép công thức phi cấu trúc (`RecipeModel`), cấu hình hệ thống (`SystemConfigModel`) và giao dịch SQLite 3NF qua `server/database.py` (`RLock` + `WAL` mode).
+   - **Desktop UI (`Desktop Admin Client`)**: Chỉ đóng vai trò là **Client quản trị** gửi Request tới Server `:8080` và nhận SSE `/api/events` (tuyệt đối không kết nối hoặc đọc thẳng cơ sở dữ liệu).
    - Chạy nền dịch vụ lắng nghe mạng (Server Listener) và tác vụ quét cảnh báo định kỳ (`D4`) ngay cả khi cửa sổ chính đang thu gọn về System Tray.
    - Giám sát trạng thái Server, danh sách Mobile Client đang kết nối, log Request/Response và sức khỏe kết nối DB.
    - Cấu hình tham số hệ thống (`system_settings`: múi giờ, ngày hệ thống, thanh mô phỏng thời gian demo FEFO, ngưỡng cảnh báo, quy tắc mức ưu tiên).
@@ -55,7 +56,7 @@ Tài liệu đặc tả các cụm đối tượng gồm **Quản trị viên b�
 ### 1.4. Quan hệ phụ thuộc và Trình tự thực hiện nghiệp vụ
 1. **Khởi tạo nền tảng trước khi nhập kho (`M07` → `M01`)**: Phải tồn tại danh mục `categories`, `storage_locations`, `units` và `system_settings` trước khi tạo `foods` và `food_items`.
 2. **Định nghĩa sản phẩm trước hoặc cùng lúc với lô tồn kho (`foods` → `food_items`)**: Khi thêm thực phẩm (`D1`), kiểm tra trùng theo `food_code` / `food_name`; nếu món đã có trong `foods`, tái sử dụng `food_id` và chỉ tạo lô `food_items` mới (khác HSD/vị trí).
-3. **Mọi thay đổi tồn kho phải đi qua Nhật ký biến động (`inventory_transactions` → Trigger → `food_items`)**: Không sửa số lượng tồn trực tiếp bỏ qua log; xuất dùng gọi `sp_use_food` để tạo bản ghi âm trong `inventory_transactions`, từ đó Trigger tự đồng bộ `current_quantity` và chuyển `status = 'Đã hết'` khi tồn $\le 0$.
+3. **Mọi thay đổi tồn kho phải đi qua Tầng Model & Nhật ký biến động (`DatabaseTransaction` → `inventory_transactions` + `food_items`)**: Không sửa số lượng tồn trực tiếp bỏ qua log; xuất dùng gọi `POST /api/food/use` (`tcp_server.py` → `core_services.use_food()` → `FoodInventoryModel.use_food()` qua `DatabaseTransaction` `RLock + WAL` trong `server/database.py`) để cập nhật `current_quantity` nguyên tử, chèn bản ghi biến động vào `inventory_transactions`, và chuyển trạng thái khi tồn $\le 0$.
 4. **Biến động kho/HSD tự động kích hoạt tính lại FEFO (`D1`/`D2`/`2.2.9`/`2.3` → `D3` & `D4`)**: Mọi thao tác thêm, xuất dùng, sửa HSD, hết hàng hoặc hết hạn đều lập tức cập nhật lại thứ tự FEFO, loại món hết hàng/quá hạn khỏi đề xuất và cập nhật lại bộ đếm cảnh báo + Dashboard (`1.6.1`–`1.6.5`).
 
 ### 1.5. Nguyên tắc & Triết lý tổ chức giao diện cho hai nền tảng
@@ -90,7 +91,7 @@ Tài liệu đặc tả các cụm đối tượng gồm **Quản trị viên b�
 │ ▸ Danh mục    │                                           │  [Dùng][Sửa][Xóa] │
 │ ▸ Cài đặt     │                                           │                   │
 ├───────────────┴───────────────────────────────────────────┴───────────────────┤
-│ DB: MySQL Connected │ Active Clients: 2 │ Cảnh báo: 4 │ Thu gọn khay hệ thống │ ← Status Bar (24px)
+│ DB: SQLite WAL Connected │ Active Clients: 2 │ Cảnh báo: 4 │ Thu gọn khay hệ thống │ ← Status Bar (24px)
 └───────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -107,7 +108,7 @@ DESKTOP SERVER APPLICATION
     │
     ├── [Màn hình chính] DSK-02: Đề xuất Thực phẩm Ưu tiên (FEFO) & Gợi ý Món ăn
     │   ├── [Modal] DSK-M03: Chi tiết Món ăn Gợi ý & Công thức Nấu (1.5.5.5, FR-10)
-    │   └── [Modal] DSK-M02: Xuất dùng nhanh từ thẻ FEFO (2.5.3 / sp_use_food)
+    │   └── [Modal] DSK-M02: Xuất dùng nhanh từ thẻ FEFO (POST /api/food/use)
     │
     ├── [Màn hình chính] DSK-03: Quản lý Thực phẩm, Tồn kho & Tìm kiếm Đa chiều (2.8)
     │   ├── [Drawer bên phải] DSK-03-D: Chi tiết Hồ sơ Thực phẩm & Lịch sử Lô (2.8.2)
@@ -245,7 +246,7 @@ MOBILE CLIENT APPLICATION
    - Bảng rút gọn Top thực phẩm cần dùng gấp hôm nay (FEFO Ưu tiên Cao) & Cảnh báo khẩn.
    - Panel Giám sát Server (Server Monitor Console): Trạng thái Listener (Đang chạy/Đã dừng), Địa chỉ IP:Port, Danh sách thiết bị Mobile Client đang kết nối, Bảng log Request/Response gần nhất, Nút `Bật/Tạm dừng Server`, `Hiển thị QR kết nối`.
 7. **Thông tin hiển thị**:
-   - Tổng số lô thực phẩm đang quản lý, tổng số lượng theo nhóm; số món Đã hết hạn / Sắp hết hạn ($\le$ ngưỡng); số món Dưới mức tồn tối thiểu; số Client đang kết nối; trạng thái kết nối CSDL MySQL; IP LAN & Port đang lắng nghe; thời gian & loại request từ Mobile.
+   - Tổng số lô thực phẩm đang quản lý, tổng số lượng theo nhóm; số món Đã hết hạn / Sắp hết hạn ($\le$ ngưỡng); số món Cạn kho ($\le$ `min_threshold`); số Client đang kết nối; trạng thái kết nối CSDL SQLite WAL (`RLock`); IP LAN & TCP Port `8080` đang lắng nghe; thời gian & loại request từ Mobile.
 8. **Các thao tác người dùng**:
    - Chọn khoảng thời gian thống kê (7 ngày / 30 ngày / tùy chọn `Date Range`).
    - Nhấn thẻ KPI hoặc "Xem tất cả" để nhảy tới `DSK-02`, `DSK-03`, `DSK-04`.
@@ -255,7 +256,7 @@ MOBILE CLIENT APPLICATION
    - Mở mặc định khi khởi chạy cửa sổ chính Desktop.
    - Điều hướng trực tiếp qua Sidebar hoặc các liên kết nhanh đến `DSK-02`, `DSK-03`, `DSK-04`, `DSK-05`, `DSK-07`.
 10. **Trạng thái giao diện cần thiết**:
-    - `Server Running` (xanh, hiển thị IP:Port & danh sách Client), `Server Stopped` (cảnh báo Mobile không thể kết nối), `DB Error` (lỗi kết nối MySQL — khóa thao tác kho), `Empty Inventory` (chưa có thực phẩm, gợi ý nút `Thêm thực phẩm`), `Loading Skeleton` cho biểu đồ.
+    - `Server Running` (xanh, hiển thị `IP:8080` & danh sách Client), `Server Stopped` (cảnh báo Mobile không thể kết nối), `DB Error` (lỗi truy xuất SQLite — khóa thao tác kho), `Empty Inventory` (chưa có thực phẩm, gợi ý nút `+ Nhập thực phẩm đầu tiên`), `Loading Skeleton` cho biểu đồ.
 
 ---
 
@@ -503,7 +504,7 @@ MOBILE CLIENT APPLICATION
 2. **Tên màn hình**: Modal Thao tác Biến động Kho
 3. **Ứng dụng sở hữu**: Desktop (Server)
 4. **Phân hệ và chức năng tương ứng**:
-   - PH-02: `2.5` Quản lý số lượng (`2.5.3`–`2.5.6`), `2.7.4` Thay đổi vị trí bảo quản, `FR-04` (Kiểm kê), `FR-05` (Xuất dùng qua `sp_use_food`), `M02`, `D2`.
+   - PH-02: `2.5` Quản lý số lượng (`2.5.3`–`2.5.6`), `2.7.4` Thay đổi vị trí bảo quản, `FR-04` (Kiểm kê), `FR-05` (Xuất dùng qua `POST /api/food/use` / `core_services.use_food`), `M02`, `D2`.
 5. **Mục đích sử dụng**: Gom các thao tác cập nhật trạng thái/số lượng/vị trí của một lô hàng đang quản lý vào một hộp thoại đa chế độ thống nhất (Segmented Tab trong modal), bảo đảm mọi thay đổi số lượng đều tạo bản ghi Audit Log trong `inventory_transactions`.
 6. **Thành phần giao diện**:
    - Header tóm tắt lô hàng đang thao tác (Tên, Mã, Vị trí hiện tại, HSD, Tồn hiện tại + Đơn vị).
@@ -521,7 +522,7 @@ MOBILE CLIENT APPLICATION
 9. **Luồng điều hướng**:
    - Mở từ `DSK-02`, `DSK-03`, `DSK-03-D`, `DSK-04`. Đóng sau khi Server xác nhận thành công và tự cập nhật lại danh sách FEFO, Kho, Cảnh báo, Dashboard.
 10. **Trạng thái giao diện cần thiết**:
-    - `Mode Use`, `Mode Restock`, `Mode Audit`, `Mode Move Location`, `Validation Error` (`0 < SL dùng <= Tồn kho`, lý do bắt buộc khi điều chỉnh), `Submitting`, `Server Error` (nhận lỗi từ `sp_use_food`).
+    - `Mode Use`, `Mode Restock`, `Mode Audit`, `Mode Move Location`, `Validation Error` (`0 < SL dùng <= Tồn kho`, lý do bắt buộc khi điều chỉnh), `Submitting`, `Server Error` (nhận lỗi JSON HTTP `400/409` từ `core_services.use_food`).
 
 ---
 
@@ -832,7 +833,7 @@ MOBILE CLIENT APPLICATION
 3. **Ứng dụng sở hữu**: Mobile (Client)
 4. **Phân hệ và chức năng tương ứng**:
    - PH-02: `2.5` (`2.5.3`–`2.5.6`), `FR-04`, `FR-05`, `M02`, `D2`.
-5. **Mục đích sử dụng**: Cho phép người dùng cập nhật số lượng thực phẩm chỉ bằng vài lần chạm khi đang đứng trước tủ lạnh/bếp, bảo đảm gọi đúng nghiệp vụ `sp_use_food` hoặc ghi nhận `inventory_transactions` trên Server.
+5. **Mục đích sử dụng**: Cho phép người dùng cập nhật số lượng thực phẩm chỉ bằng vài lần chạm khi đang đứng trước tủ lạnh/bếp, bảo đảm gửi yêu cầu `POST /api/food/use` tới Server → `core_services.use_food` → `FoodInventoryModel.use_food` xử lý và ghi nhận `inventory_transactions` nguyên tử (`RLock + SQLite WAL` qua `server/database.py`).
 6. **Thành phần giao diện**:
    - Header tóm tắt món (`Tên`, `Tồn hiện tại + Đơn vị`, `HSD`).
    - Segmented Tab chọn loại thao tác: `Xuất dùng` | `Nhập thêm` | `Kiểm kê`.
@@ -847,7 +848,7 @@ MOBILE CLIENT APPLICATION
 9. **Luồng điều hướng**:
    - Mở dạng Bottom Sheet đè trên `MOB-01`, `MOB-02`, `MOB-03`, `MOB-04`, `MOB-05`. Khi Server phản hồi thành công → đóng Sheet và làm mới dữ liệu màn hình nền.
 10. **Trạng thái giao diện cần thiết**:
-    - `Mode Use`, `Mode Restock`, `Mode Audit`, `Validation Error` (`0 < SL dùng <= Tồn kho`), `Submitting...`, `Server Conflict/Error` (hiển thị lỗi từ `sp_use_food` nếu tồn vừa bị thay đổi bởi thiết bị khác).
+    - `Mode Use`, `Mode Restock`, `Mode Audit`, `Validation Error` (`0 < SL dùng <= Tồn kho`), `Submitting...`, `Server Conflict/Error` (hiển thị lỗi JSON từ `POST /api/food/use` nếu tồn vừa bị thay đổi bởi thiết bị khác).
 
 ---
 
@@ -951,13 +952,13 @@ MOBILE CLIENT APPLICATION
 
 ### 5.2. Luồng 2 — Xuất dùng thực phẩm & Kiểm kê điều chỉnh (`D2` / `FR-04`, `FR-05`)
 - **Trên Mobile Client**:
-  1. Khi chuẩn bị nấu ăn, người dùng xem danh sách ưu tiên tại `MOB-01` (hoặc tra cứu tại `MOB-02` / `MOB-03`), chạm `Dùng ngay` để mở Bottom Sheet `MOB-S01`.
-  2. Chọn hoặc nhập số lượng lấy ra dùng (`0 < IN14 <= tồn hiện tại`), chọn lý do (ví dụ *Nấu bữa tối*), xem tồn dự kiến còn lại, bấm `Xác nhận`.
-  3. Mobile gửi lệnh `USE_FOOD` (`item_id`, `quantity_used`, `reason`) lên Desktop Server.
-  4. Nếu hợp lệ: Mobile hiển thị tồn kho còn lại mới; nếu tồn = 0, lô hàng biến mất khỏi danh sách FEFO `MOB-01` và chuyển trạng thái `Đã hết` trên `MOB-02`.
-  5. Nếu có lỗi nghiệp vụ (ví dụ người khác vừa dùng hết trước đó vài giây khiến `p_quantity_used > current_quantity`): Server trả lỗi từ `sp_use_food`, Mobile hiển thị thông báo tồn kho mới nhất để người dùng nhập lại.
+  1. Khi chuẩn bị nấu ăn, người dùng xem danh sách ưu tiên tại `MOB-01` (hoặc tra cứu tại `MOB-02` / `MOB-03`): bấm **`-1 Dùng nhanh`** (`>= 44px`) để trừ ngay `1 đơn vị` bằng **1 chạm**, hoặc bấm **`Tùy chỉnh`** để mở Bottom Sheet `MOB-S01`.
+  2. Nếu mở sheet, chọn/nhập số lượng lấy ra dùng (`0 < IN14 <= tồn hiện tại`), chọn lý do (ví dụ *Nấu bữa tối*), xem tồn dự kiến còn lại, bấm `Xác nhận`.
+  3. Mobile gửi yêu cầu `POST /api/food/use` (`item_id`, `quantity`, `reason`) lên TCP Server `:8080`.
+  4. Nếu hợp lệ: Mobile hiển thị tồn kho còn lại mới; nếu tồn = 0, lô hàng biến mất khỏi danh sách FEFO `MOB-01` và chuyển trạng thái hết tồn trên `MOB-02`.
+  5. Nếu có lỗi nghiệp vụ (ví dụ người khác vừa dùng hết trước đó vài giây khiến `quantity > current_quantity`): Server trả lỗi JSON từ `core_services.use_food`, Mobile hiển thị thông báo tồn kho mới nhất để người dùng nhập lại.
 - **Trên Desktop Server**:
-  - Dịch vụ nền nhận yêu cầu → gọi Stored Procedure `sp_use_food(p_item_id, p_quantity_used, p_reason)` → chèn dòng âm vào `inventory_transactions` → Trigger `trg_after_inventory_transaction` tự cập nhật `food_items.current_quantity` và đổi `status = 'Đã hết'` nếu $\le 0$ → tính lại FEFO & Cảnh báo (nếu tồn mới $\le$ `min_threshold`, tự động đưa vào danh sách Cần mua bổ sung) → trả phản hồi về Mobile.
+  - TCP Server `:8080` nhận yêu cầu → gọi `core_services.use_food(item_id, quantity, reason)` trong giao dịch `server/database.py` (`RLock` + SQLite `WAL`) → cập nhật `food_items.current_quantity` (đổi trạng thái nếu $\le 0$) và ghi nhận dòng vào `inventory_transactions` → tính lại FEFO & Cảnh báo (`view_alerts`, nếu `current_quantity <= min_threshold` chuyển màu Tím than `Cạn kho`) → phát sóng sự kiện qua kênh **SSE `/api/events`** tới tất cả Mobile & Desktop đang mở.
 
 ### 5.3. Luồng 3 — Xem đề xuất FEFO & Gợi ý món ăn (`D3` / `FR-09`, `FR-10`)
 - **Trên Mobile Client & Desktop Server**:
@@ -999,33 +1000,36 @@ MOBILE CLIENT APPLICATION
 ## 6. LUỒNG TƯƠNG TÁC CLIENT–SERVER
 
 ### 6.1. Nguyên tắc kiến trúc tương tác
-- **Desktop Server tách biệt Dịch vụ Nền (Server Listener + Business/DB Engine) với Giao diện Desktop (Admin UI)**:
-  - Ngay khi khởi động Desktop Server (dù đang mở `DSK-01`, đang thao tác ở `DSK-06`, hay đang thu gọn về `DSK-M06` System Tray), **Server Listener luôn lắng nghe độc lập**.
-  - Mọi yêu cầu từ Mobile Client đi thẳng vào lớp tiếp nhận mạng → xử lý nghiệp vụ → thao tác CSDL MySQL → trả phản hồi cho Mobile và chỉ đẩy sự kiện làm mới UI sang cửa sổ Desktop nếu cửa sổ đó đang mở.
-  - **Không bắt buộc người dùng trên Desktop phải mở màn hình tương ứng để duyệt hay xử lý yêu cầu từ Mobile.**
+- **Tách biệt hoàn toàn Client (Mobile & Desktop Admin UI) – Server Controller – Model – SQLite Database**:
+  - **Không một Client nào (cả Mobile Client lẫn Desktop Admin Client) được phép kết nối hay tương tác trực tiếp với SQLite DB**.
+  - Mọi yêu cầu từ Mobile Client và Desktop Admin Client đi vào **Python TCP Socket Server `:8080` (`server/tcp_server.py` — HTTP/1.1 + REST JSON)** → Facade `core_services.py` → **Tầng Model (`server/models/*`) đảm nhận xử lý dữ liệu** (`FoodInventoryModel`, `CatalogModel`, `RecipeModel`, `SystemConfigModel`) → thao tác CSDL **SQLite 3NF** qua `server/database.py` (`RLock + WAL`) → trả JSON Response cho Client gửi và phát sóng sự kiện realtime **`event: inventory_updated`** qua **SSE (`/api/events`)** tới các Desktop Admin Client / Mobile Client đang kết nối.
+  - **Không bắt buộc Admin trên Desktop phải mở màn hình tương ứng để duyệt hay xử lý yêu cầu từ Mobile.**
 
 ### 6.2. Sơ đồ tuần tự luồng tương tác chính
 
-#### A. Luồng Khởi tạo kết nối & Đồng bộ trạng thái (Mobile Client ↔ Desktop Server)
+#### A. Luồng Khởi tạo kết nối & Đồng bộ trạng thái (Mobile Client ↔ Server Controller ↔ Model `:8080`)
 ```mermaid
 sequenceDiagram
     actor U as Người dùng Mobile
     participant M as Mobile Client (MOB-00 / App)
-    participant S as Desktop Server Listener (Nền)
-    participant DB as MySQL (food_management)
-    participant DUI as Desktop UI (DSK-01 / Tray)
+    participant S as Python TCP Server (:8080 Controller)
+    participant MD as Tầng Model (server/models/*)
+    participant DB as SQLite 3NF (database.py RLock + WAL)
+    participant DUI as Desktop Admin Client (DSK-01)
 
-    U->>M: Nhập IP:Port hoặc Quét QR từ DSK-07
-    M->>S: Gửi yêu cầu HANDSHAKE / PING
+    U->>M: Nhập IP:8080 trong mạng LAN
+    M->>S: GET /api/status + Đăng ký SSE (/api/events)
     alt Server đang chạy và hợp lệ
-        S->>DB: Kiểm tra kết nối DB & đọc system_settings
-        DB-->>S: OK (timezone, ngày HT, ngưỡng)
-        S-->>M: Phản hồi CONNECTED (Server Info + Danh mục + Cấu hình)
-        S-->>DUI: Cập nhật danh sách Client đang kết nối (nếu đang mở)
-        M-->>U: Chuyển vào MOB-01 & tải dữ liệu FEFO
+        S->>MD: Yêu cầu trạng thái & cấu hình hệ thống
+        MD->>DB: Đọc độc lập bảng phi cấu trúc system_settings & đếm kho
+        DB-->>MD: Trả dữ liệu thô
+        MD-->>S: SystemConfig + Trạng thái OK
+        S-->>M: HTTP 200 JSON (Server Info) + Mở luồng SSE /api/events
+        S-->>DUI: Đẩy cập nhật danh sách phiên kết nối
+        M-->>U: Chuyển vào MOB-01 & tải GET /api/fefo
     else Server chưa bật / Sai IP:Port / Timeout
         S--xM: Không phản hồi / Connection Refused
-        M-->>U: Hiển thị lỗi kết nối + hướng dẫn kiểm tra mạng LAN & Server
+        M-->>U: Hiển thị lỗi kết nối + hướng dẫn kiểm tra mạng LAN & cổng 8080
     end
 ```
 
@@ -1033,52 +1037,54 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     actor U as Người dùng Mobile
-    participant M as Mobile Client (MOB-S01 / MOB-06)
-    participant S as Desktop Server Service (Nền)
-    participant DB as MySQL (SP & Trigger)
-    participant DUI as Desktop Monitor / UI (Nếu đang mở)
+    participant M as Mobile Client (MOB-01 / MOB-S01)
+    participant S as Python TCP Server (:8080 Controller)
+    participant MD as Tầng Model (FoodInventoryModel)
+    participant DB as SQLite 3NF (database.py RLock + WAL)
+    participant DUI as Desktop Admin Client (DSK-01 / DSK-03 / DSK-05)
 
-    U->>M: Nhập số lượng dùng (IN14) & bấm Xác nhận
-    M->>M: Validate cục bộ (SL > 0, đang Online)
-    M->>S: Gửi REQUEST (USE_FOOD: item_id, qty, reason)
-    S->>S: Validate dữ liệu đầu vào & kiểm tra kết nối DB
-    S->>DB: CALL sp_use_food(item_id, qty, reason)
+    U->>M: Chạm "-1 nhanh" hoặc nhập SL trên MOB-S01 & Xác nhận
+    M->>M: Validate cục bộ (SL > 0, đang kết nối Server)
+    M->>S: POST /api/food/use (item_id, quantity, reason)
+    S->>S: Parse JSON & Ủy quyền core_services.use_food() -> FoodInventoryModel
+    S->>MD: use_food(item_id, quantity, reason)
+    MD->>DB: DatabaseTransaction (RLock + WAL): UPDATE food_items + INSERT inventory_transactions
     alt Tồn kho đủ và hợp lệ
-        DB->>DB: INSERT inventory_transactions -> Trigger trg_after_inventory_transaction
-        DB-->>S: Thành công (so_luong_con_lai, trang_thai_kho)
-        S->>DB: Tính lại view_fefo_recommendations & view_alerts
-        S-->>M: RESPONSE OK + Dữ liệu tồn & FEFO cập nhật
-        S-->>DUI: Đẩy thông báo làm mới dữ liệu & ghi Network Log
+        DB-->>MD: Commit OK
+        MD-->>S: Tồn mới + Giao dịch Audit Log vừa ghi
+        S-->>M: HTTP 200 JSON OK + Tồn & FEFO cập nhật
+        S-->>DUI: Phát sóng SSE (/api/events -> inventory_updated) tới Admin & Mobile khác
         M-->>U: Hiện thông báo thành công & cập nhật UI
     else Lỗi nghiệp vụ (SL dùng > tồn kho / Lô không tồn tại)
-        DB-->>S: SIGNAL SQLSTATE '45000'
-        S-->>M: RESPONSE ERROR (Mã lỗi + Thông báo chi tiết + Tồn hiện tại)
-        M-->>U: Hiển thị lỗi rõ ràng & cập nhật lại số tồn thực tế
+        DB-->>MD: Rollback Transaction
+        MD-->>S: Raise ValueError (Chi tiết lỗi + tồn thực tế)
+        S-->>M: HTTP 400/409 JSON ERROR
+        M-->>U: Hiển thị lỗi rõ ràng & đồng bộ lại số tồn thực tế qua GET
     else Mất kết nối giữa chừng / Timeout
         S--xM: Network Timeout
-        M-->>U: Hiện trạng thái Timeout, KHÔNG báo thành công giả, cho phép Thử lại/Đồng bộ kiểm tra
+        M-->>U: Hiện trạng thái Timeout, KHÔNG báo thành công giả, cho phép Thử lại
     end
 ```
 
-### 6.3. Bảng đặc tả hợp đồng trao đổi dữ liệu Client–Server
+### 6.3. Bảng đặc tả hợp đồng trao đổi dữ liệu Client–Server (`TCP Socket :8080`)
 
 | Nhóm thao tác | Yêu cầu từ Mobile → Server | Xử lý tại Desktop Server (Nền) | Phản hồi Server → Mobile | Xử lý khi Lỗi / Mất kết nối trên Mobile |
 |---|---|---|---|---|
-| **1. Kết nối & Handshake** | `PING / HANDSHAKE` (IP, Port, Version, Token nếu có) | Kiểm tra cổng, xác thực phiên bản, kiểm tra DB sống | `ACK` + Ngày hệ thống, múi giờ, ngưỡng cảnh báo, danh mục nền (`categories`, `units`, `storage_locations`) | Hiện thông báo cụ thể (`Không tới được máy chủ`, `Timeout`, `Sai mã ghép nối`), giữ tại `MOB-00`. |
-| **2. Đọc FEFO & Món ăn (`D3`)** | `GET_FEFO_LIST` (bộ lọc vị trí/mức độ tùy chọn) + `GET_RECIPES` | Đọc `view_fefo_recommendations` (loại `DaysLeft < 0`), đối chiếu `recipes` | Danh sách thẻ FEFO có thứ tự, `DaysLeft`, mức ưu tiên, lý do, món ăn gợi ý | Nếu mất kết nối: hiển thị dữ liệu cache gần nhất kèm **Banner Offline (Chỉ xem)** và nút `Thử lại`. |
-| **3. Đọc Kho & Lọc (`D5`)** | `SEARCH_FOOD_ITEMS` (từ khóa + 5 tiêu chí `IN15`, phân trang) | Thực thi SQL JOIN 5 bảng theo `WHERE`, tính trạng thái | Danh sách lô thỏa điều kiện + tổng số bản ghi | Nếu timeout: hiện thông báo lỗi tải dữ liệu và nút `Tải lại`, giữ nguyên điều kiện lọc đã chọn. |
-| **4. Đọc Chi tiết & Log** | `GET_ITEM_DETAIL` (`item_id`) | Đọc chi tiết `food_items` + `foods` + `inventory_transactions` của lô | Hồ sơ chi tiết 12+ trường & lịch sử giao dịch lô | Nếu `item_id` đã bị xóa cứng/không tồn tại → báo `Không tìm thấy lô hàng`, quay về danh sách và làm mới. |
-| **5. Quét AI Vision (`FR-03`)** | `SCAN_FOOD_IMAGE` (dữ liệu ảnh chụp/chọn từ Mobile) | Gọi bộ nhận diện AI Vision trích xuất Tên, Loại, Thương hiệu, HSD *(xem Mục 8)* | Dữ liệu gợi ý điền sẵn vào form `MOB-06` + mức độ tin cậy | Nếu ảnh mờ / không nhận diện / lỗi dịch vụ AI → thông báo không đọc được, chuyển về nhập tay trên `MOB-06`. |
-| **6. Thêm thực phẩm (`D1`)** | `CREATE_FOOD_ITEM` (12 trường `IN01`–`IN12`, cờ xác nhận ghép `food_id` nếu trùng tên) | Validate dữ liệu, kiểm tra trùng `food_code`/`food_name`, ghi `foods` + `food_items` + `inventory_transactions`, chạy lại FEFO/Cảnh báo | `CREATED` + Bản ghi lô mới + danh sách FEFO/Cảnh báo cập nhật | Nếu trùng `food_code` → highlight lỗi ở ô Mã; nếu trùng `food_name` → hỏi ghép lô; nếu mất mạng → **giữ nguyên form**, không xóa dữ liệu đã nhập. |
-| **7. Xuất dùng / Nhập / Kiểm kê / Đổi vị trí (`D2`, `2.5`, `2.7.4`)** | `USE_FOOD` / `RESTOCK_FOOD` / `ADJUST_FOOD` / `MOVE_LOCATION` | Gọi `sp_use_food` hoặc ghi giao dịch vào `inventory_transactions` (Trigger tự cập nhật `food_items`), chạy lại FEFO/Cảnh báo | `UPDATED` + Số lượng tồn mới + trạng thái lô mới | Nếu `SL dùng > Tồn` (do người khác vừa dùng trước) → trả tồn kho hiện tại mới nhất; nếu mất kết nối → **không trừ lạc quan giả định tồn kho**, yêu cầu kết nối lại để xác minh tránh sai số kho. |
-| **8. Sửa / Thanh lý Xóa mềm (`2.2`, `2.3`)** | `UPDATE_FOOD_ITEM` hoặc `CANCEL_FOOD_ITEM` (`item_id`, `reason`) | Validate HSD/dữ liệu, cập nhật `food_items` / đặt `status = 'Đã hủy'`, ghi log bảo toàn lịch sử, tính lại FEFO/Cảnh báo | `OK` + Thông tin lô cập nhật | Validate lỗi trả về hiển thị tại trường tương ứng; mất kết nối báo thử lại. |
-| **9. Cảnh báo, Thống kê & Log (`D4`, `M06`)** | `GET_ALERTS`, `GET_STATS` (`date_range`), `GET_AUDIT_LOGS` | Đọc `view_alerts`, tổng hợp thống kê theo thời gian & vị trí, truy vấn `inventory_transactions` | Danh sách 2 nhóm cảnh báo, số liệu thống kê, bảng log | Nếu mất mạng: giữ cache chỉ đọc kèm nhãn thời điểm cập nhật gần nhất + nút đồng bộ lại. |
-| **10. Đồng bộ chủ động (Server → Client)** | Mobile giữ kênh lắng nghe hoặc polling chu kỳ ngắn | Khi Server phát hiện biến động kho, thay đổi `system_settings`, hoặc kết quả quét `D4` mới | Gửi sự kiện `INVENTORY_CHANGED` / `ALERTS_UPDATED` / `SETTINGS_UPDATED` | Mobile tự làm mới Badge cảnh báo và màn hình đang xem; nếu rớt kênh đẩy, tự đồng bộ lại khi kết nối hồi phục. |
+| **1. Kết nối & Trạng thái** | `GET /api/status` & `GET /api/events` (SSE) | Kiểm tra cổng `8080`, đọc `system_settings` & sức khỏe SQLite | `200 OK` JSON trạng thái Server, CSDL, số client & mở luồng SSE | Hiện thông báo cụ thể (`Không tới được máy chủ :8080`, `Timeout`), giữ tại `MOB-00`. |
+| **2. Đọc FEFO & Món ăn (`D3`)** | `GET /api/fefo` + `GET /api/recipes/suggest` | Đọc `view_fefo_recommendations` (loại `days_left < 0`), xếp FEFO 3 cấp & Match Score `+30%` | Danh sách thẻ FEFO có thứ tự, `days_left`, mức ưu tiên, lý do, món ăn gợi ý | Nếu mất kết nối: hiển thị thông báo lỗi mạng kèm nút `Thử lại`. |
+| **3. Đọc Kho & Lọc (`D5`)** | `GET /api/inventory` (từ khóa + bộ lọc) | Thực thi SQLite JOIN trên `food_items`, `foods`, `categories`, `storage_locations`, `units` | Danh sách lô thỏa điều kiện + tổng số bản ghi | Nếu timeout: hiện thông báo lỗi tải dữ liệu và nút `Tải lại`, giữ nguyên điều kiện lọc. |
+| **4. Đọc Chi tiết & Log** | `GET /api/inventory` + `GET /api/audit-log` (`item_id`) | Đọc chi tiết `food_items` + `foods` + `inventory_transactions` của lô | Hồ sơ chi tiết các trường SQLite & lịch sử giao dịch lô | Nếu `item_id` không tồn tại → báo `Không tìm thấy lô hàng`, quay về danh sách và làm mới. |
+| **5. Quét AI Vision (`[Future Scope]`)** | *(Chưa có trong 15 REST APIs)* | Dự kiến giai đoạn mở rộng trích xuất Tên, Loại, HSD | N/A ở giai đoạn Core | Dùng nhập tay trực tiếp qua `POST /api/food/add` trên `MOB-06`. |
+| **6. Thêm thực phẩm (`D1`)** | `POST /api/food/add` | Validate dữ liệu, kiểm tra trùng, ghi `foods` + `food_items` + `inventory_transactions` (`RLock + WAL`) | `201 Created` + Bản ghi lô mới + phát SSE `/api/events` | Nếu trùng mã hoặc dữ liệu sai → báo lỗi tại trường; nếu mất mạng → **giữ nguyên form**. |
+| **7. Xuất dùng / Kiểm kê (`D2`, `2.5`)** | `POST /api/food/use` (Quick Use `quantity: 1` hoặc tùy chỉnh) / `POST /api/food/adjust` | Gọi `core_services.use_food()` / `adjust_food()` qua `DatabaseTransaction (RLock + WAL)`, ghi `inventory_transactions`, chạy lại FEFO/Cảnh báo | `200 OK` JSON + Số lượng tồn mới + phát SSE `/api/events` | Nếu `SL dùng > Tồn` → trả HTTP `400/409` kèm tồn hiện tại mới nhất; nếu mất kết nối → **không trừ lạc quan giả định tồn kho**. |
+| **8. Xóa mềm / Thanh lý (`2.3`)** | `POST /api/food/delete` (`item_id`, `reason`) | Validate dữ liệu, cập nhật trạng thái trong `food_items`, ghi log `inventory_transactions`, tính lại FEFO/Cảnh báo | `200 OK` JSON + phát SSE `/api/events` | Validate lỗi trả về hiển thị rõ; mất kết nối báo thử lại. |
+| **9. Cảnh báo, Mua sắm & Log (`D4`)** | `GET /api/alerts`, `GET /api/shopping-list`, `GET /api/audit-log` | Đọc `view_alerts`, tổng hợp Shopping List 3 quầy (`<= min_threshold`), truy vấn `inventory_transactions` | Danh sách cảnh báo 4 cấp, danh sách mua sắm, bảng log | Nếu mất mạng: hiện thông báo lỗi mạng + nút đồng bộ lại. |
+| **10. Đồng bộ chủ động (SSE Realtime)** | Mobile mở kênh `EventSource('/api/events')` | Khi Server ghi xong SQLite (`add`, `use`, `adjust`, `delete`, `simulation/date`) | Phát sự kiện qua kênh **SSE `/api/events`** | Mobile & Desktop tự cập nhật kho và bảng FEFO tức thì không cần F5. |
 
 ### 6.4. Quy tắc xử lý các trường hợp ngoại lệ & mất kết nối
-1. **Không cho phép thao tác ghi khi Offline (`Offline Read-Only`)**: Vì Desktop Server là nguồn dữ liệu chân lý duy nhất (Single Source of Truth) với `sp_use_food` và `trg_after_inventory_transaction` để chống xuất âm tồn kho khi nhiều thành viên cùng dùng, khi mất kết nối Mobile phải hiển thị rõ Banner mất kết nối, chỉ cho xem dữ liệu đã tải gần nhất và vô hiệu hóa (hoặc cảnh báo trước) các nút ghi (`Lưu`, `Xuất dùng`, `Thanh lý`).
-2. **Chống mất dữ liệu biểu mẫu (`Form Preservation`)**: Nếu người dùng đã điền xong 12 trường ở `MOB-06` rồi bấm Lưu đúng lúc rớt Wi-Fi, Mobile tuyệt đối không đóng form mà phải giữ nguyên toàn bộ nội dung để bấm `Thử lại`.
-3. **Thông báo lỗi trung thực (`Honest Error Feedback`)**: Không hiển thị `"Đã lưu"` hoặc `"Đã dùng"` trước khi nhận được xác nhận thành công từ Server; mọi lỗi từ `SIGNAL SQLSTATE '45000'` hoặc timeout đều phải diễn giải thành thông báo tiếng Việt rõ hành động khắc phục cho người dùng.
+1. **Không cho phép thao tác ghi khi mất kết nối Server**: Vì Python TCP Server `:8080` + SQLite (`RLock + WAL`) là nguồn dữ liệu chân lý duy nhất (Single Source of Truth) chống xuất âm tồn kho khi nhiều thành viên cùng dùng, khi mất kết nối Mobile phải hiển thị rõ Banner mất kết nối và vô hiệu hóa các nút ghi (`Lưu`, `Xuất dùng`, `Thanh lý`).
+2. **Chống mất dữ liệu biểu mẫu (`Form Preservation`)**: Nếu người dùng đã điền xong biểu mẫu ở `MOB-06` rồi bấm Lưu đúng lúc rớt Wi-Fi, Mobile tuyệt đối không đóng form mà phải giữ nguyên toàn bộ nội dung để bấm `Thử lại`.
+3. **Thông báo lỗi trung thực (`Honest Error Feedback`)**: Không hiển thị `"Đã lưu"` hoặc `"Đã dùng"` trước khi nhận được HTTP `200/201` từ TCP Server `:8080`; mọi lỗi JSON `4xx/5xx` hoặc timeout đều phải diễn giải thành thông báo tiếng Việt rõ hành động khắc phục cho người dùng.
 
 ---
 
@@ -1098,7 +1104,7 @@ sequenceDiagram
 | **2.2 Sửa thực phẩm** (`2.2.1`–`2.2.12`: chọn món sửa, sửa thông tin cơ bản, loại, số lượng + ghi biến động, đơn vị, vị trí, ngày nhập, HSD + tính lại ngày còn lại, validate & lưu) | `DSK-03` + `DSK-M01` (chế độ Sửa); `MOB-03` → `MOB-06` (chế độ Sửa) | Desktop + Mobile | Đã bao phủ 100% |
 | **2.3 Xóa thực phẩm / Thanh lý bỏ đồ hỏng** (`2.3.1`–`2.3.6`, `FR-06`: kiểm tra tồn tại & SL còn, xác nhận kèm cảnh báo, xóa mềm bảo toàn lịch sử, cập nhật danh sách) | `DSK-03` / `DSK-03-D` / `DSK-04` + `DSK-M04`; `MOB-03` / `MOB-05` + `MOB-S05` | Desktop + Mobile | Đã bao phủ 100% |
 | **2.4 Phân loại thực phẩm** (`2.4.1`–`2.4.6`, `FR-01`: xem danh sách loại, chọn/gán/thay đổi loại cho thực phẩm, kiểm tra & cập nhật phân loại; CRUD danh mục loại `M07`) | Quản trị CRUD danh mục tại `DSK-06` (Tab 1) + `DSK-M05`; Xem & gán loại tại `DSK-M01`, `MOB-06`, `MOB-07` | Desktop (Quản trị & gán) + Mobile (Xem & gán) | Đã bao phủ 100% |
-| **2.5 Quản lý số lượng thực phẩm** (`2.5.1`–`2.5.6`, `FR-04`, `FR-05`: nhập SL ban đầu, xem SL hiện tại, xuất dùng `sp_use_food`/nhập thêm/kiểm kê điều chỉnh, kiểm tra hợp lệ, ghi lịch sử biến động, cập nhật tồn & kiểm tra tồn = 0 / tồn thấp) | Nhập ban đầu: `DSK-M01`, `MOB-06`; Xem: `DSK-03`, `DSK-03-D`, `MOB-02`, `MOB-03`; Biến động SL: `DSK-M02`, `MOB-S01`; Lịch sử: `DSK-05`, `DSK-03-D`, `MOB-03`, `MOB-07` | Desktop + Mobile | Đã bao phủ 100% |
+| **2.5 Quản lý số lượng thực phẩm** (`2.5.1`–`2.5.6`, `FR-04`, `FR-05`: nhập SL ban đầu, xem SL hiện tại, xuất dùng `POST /api/food/use`/kiểm kê điều chỉnh, kiểm tra hợp lệ, ghi lịch sử biến động `inventory_transactions`, cập nhật tồn & kiểm tra tồn = 0 / tồn thấp) | Nhập ban đầu: `DSK-M01`, `MOB-06`; Xem: `DSK-03`, `DSK-03-D`, `MOB-02`, `MOB-03`; Biến động SL: `DSK-M02`, `MOB-01` (Quick Use `-1`), `MOB-S01`; Lịch sử: `DSK-05`, `DSK-03-D`, `MOB-03`, `MOB-07` | Desktop + Mobile | Đã bao phủ 100% |
 | **2.6 Quản lý đơn vị thực phẩm** (`2.6.1`–`2.6.5`: chọn, tạo mới, kiểm tra hợp lệ, thay đổi, cập nhật đơn vị tính; CRUD đơn vị `M07`) | Quản trị CRUD đơn vị tại `DSK-06` (Tab 2) + `DSK-M05`; Chọn/đổi đơn vị cho thực phẩm tại `DSK-M01`, `MOB-06`, `MOB-07` | Desktop (Quản trị & chọn) + Mobile (Xem & chọn) | Đã bao phủ 100% |
 | **2.7 Quản lý vị trí bảo quản** (`2.7.1`–`2.7.5`, `FR-07`: chọn trong/ngoài tủ + khu vực chi tiết, tạo vị trí mới, kiểm tra hợp lệ, thay đổi vị trí bảo quản; CRUD vị trí `M07`) | Quản trị CRUD vị trí tại `DSK-06` (Tab 3) + `DSK-M05`; Chọn/đổi vị trí tại `DSK-M01`/`DSK-M02`, `MOB-06`/`MOB-S03` | Desktop (Quản trị & chọn) + Mobile (Xem & đổi vị trí) | Đã bao phủ 100% |
 | **2.8 Xem và tìm kiếm thực phẩm** (`2.8.1`–`2.8.7`, `FR-12`, `D5`: xem danh sách, xem chi tiết, tìm kiếm từ khóa tên/mã/loại, lọc theo loại, vị trí trong/ngoài tủ, trạng thái, hạn sử dụng) | `DSK-03` + `DSK-03-D`; `MOB-02` + `MOB-S02` + `MOB-03` | Desktop + Mobile | Đã bao phủ 100% |
@@ -1112,43 +1118,78 @@ sequenceDiagram
 
 ---
 
-## 8. DANH SÁCH VẤN ĐỀ CẦN LÀM RÕ
+## 8. QUYẾT ĐỊNH KIẾN TRÚC ĐÃ CHỐT (ĐỒNG BỘ TỪ ĐẶC TẢ BAN ĐẦU SANG SQLITE 3NF & TCP :8080)
 
-Trong quá trình đối chiếu chéo giữa `Phân rã chức năng.txt`, `LTMQuanLyThucPhamGiaDinh.docx`, `food_management.sql`, các ma trận và lưu đồ chuẩn hóa với kiến trúc Desktop Server – Mobile Client, có **10 điểm thiếu thông tin hoặc mâu thuẫn** cần anh/chị xác nhận trước khi chốt sang giai đoạn làm Prototype:
+> Lưu ý: Bản tài liệu hiện tại đã loại bỏ hoàn toàn các cấu trúc CSDL quan hệ cũ (`food_management.sql`, Stored Procedure / Trigger cũ) để chuẩn hóa 100% theo **SQLite 3NF + Python TCP Socket :8080**.
 
-1. **Giao thức truyền thông & Cơ chế phát hiện Server (PH-04)**:
-   - Tài liệu hiện tại chưa quy định giao thức trao đổi giữa Mobile Client và Desktop Server (TCP Socket thuần tự định nghĩa gói tin JSON, REST API HTTP, hay kết hợp WebSocket để đẩy cảnh báo realtime?).
-   - *Cần chốt*: Giao thức sử dụng là gì để xác định chính xác luồng bắt tay tại `MOB-00` và cách cập nhật thông báo tại `MOB-01` / `MOB-05`.
-2. **Xác thực người dùng, Phân quyền & Chia sẻ thiết bị (Auth / Roles)**:
-   - Tài liệu `.docx` nhắc tới *"Quản trị viên bếp ăn"*, *"Thành viên gia đình"*, nhưng `food_management.sql` **không có bảng `users`, `roles`, hay cột `user_id` trong `inventory_transactions`**.
-   - *Cần chốt*:
-     - (a) Hệ thống dùng chung kho gia đình không cần tài khoản (chỉ ghép nối Mobile–Server bằng IP:Port hoặc mã PIN/QR), hay cần bổ sung Đăng nhập/Phân quyền?
-     - (b) Mobile Client có được phép sửa/xóa Danh mục (`categories`, `units`, `storage_locations`), Công thức (`recipes`) và `system_settings` không, hay chỉ Desktop Server mới có quyền quản trị các mục này?
-3. **Thiếu bảng `recipes` và `recipe_ingredients` trong `food_management.sql`**:
-   - Chức năng `1.5.5.5` (Cho phép người dùng xem món ăn phù hợp), `FR-10`, và mục 3.1/6.4 trong `.docx` yêu cầu gợi ý món ăn từ bảng `recipes`, nhưng `food_management.sql` chưa có bảng này (chính `ma_tran_2b_modules_csdl.png` cũng ghi *"bảng recipes (chưa có)"*).
-   - *Cần chốt*: Kho công thức món ăn sẽ được bổ sung vào CSDL để quản trị viên nhập/chỉnh sửa trên Desktop (`DSK-06` Tab 4), hay dùng bộ dữ liệu tĩnh (seed JSON/rule) ở giai đoạn Prototype?
-4. **Mâu thuẫn ngưỡng phân cấp ưu tiên FEFO giữa SQL và Lưu đồ `D3`**:
-   - `view_fefo_recommendations` (trong `food_management.sql`) và mục 4.2 `.docx` quy định: `≤ 2 ngày` = Cao, `3–7 ngày` = Trung bình, `> 7 ngày` = Thấp.
-   - Trong khi mục 3.3 `.docx` và lưu đồ `D3` (`sơ đồ các luồng - chuẩn hóa.docx`) ghi: `≤ 2 ngày` = Cao, `3–5 ngày` = Trung bình, `> 5 ngày` = Thấp.
-   - Đồng thời `view_fefo_recommendations` và `view_alerts` trong SQL đang gán cứng số `2`, `3`, `7` và dùng `CURDATE()`, chưa đọc động từ bảng `system_settings`.
-   - *Cần chốt*: Chọn mốc `3–7 ngày` hay `3–5 ngày`, và có cho phép người dùng cấu hình các ngưỡng này động trong `DSK-07` hay giữ cố định?
-5. **Mâu thuẫn xử lý thực phẩm quá hạn (`DaysLeft < 0`) và giá trị `ENUM status`**:
-   - `Phân rã chức năng.txt` (`1.2.4.4`) yêu cầu **loại thực phẩm hết hạn khỏi FEFO**, nhưng `view_fefo_recommendations` trong `food_management.sql` hiện vẫn trả về các dòng `DaysLeft < 0` với nhãn `'Đã hết hạn'`.
-   - Lưu đồ `D3` ghi đổi `Status = 'EXPIRED'` (`Đã quá hạn`), trong khi `food_items.status` trong SQL chỉ có 3 giá trị `ENUM('Đang sử dụng','Đã hết','Đã hủy')`.
-   - *Cần chốt*: Món hết hạn sẽ vẫn giữ `status = 'Đang sử dụng'` (để hiện trong `view_alerts` chờ người dùng thanh lý/vứt hủy chuyển thành `'Đã hủy'`) và chỉ lọc bỏ khỏi danh sách hiển thị FEFO, hay bổ sung trạng thái `'Đã hết hạn'` vào SQL?
-6. **Xử lý Trigger khi `Vứt hủy` hoặc `Điều chỉnh` kho**:
-   - Hiện `food_management.sql` chỉ có Stored Procedure `sp_use_food` (luôn ghi `action_type = 'Sử dụng'`), chưa có thủ tục cho `'Nhập thêm'`, `'Điều chỉnh'`, `'Vứt hủy'`.
-   - Trigger `trg_after_inventory_transaction` khi `remaining_quantity <= 0` luôn đặt `status = 'Đã hết'`, ngay cả khi hành động là `'Vứt hủy'` (lẽ ra cần là `'Đã hủy'`).
-   - *Cần chốt*: Xác nhận quy tắc phân biệt `'Đã hết'` (dùng hết) và `'Đã hủy'` (vứt bỏ/thanh lý món hỏng/xóa mềm), cũng như việc đổi vị trí (`2.7.4`) hoặc sửa HSD (`2.2.9`) có ghi log vào bảng nào hay chỉ cập nhật `food_items`.
-7. **Phạm vi thực tế của Nhận diện hình ảnh AI Vision Scan (`FR-03` vs Đầu ra `7`)**:
-   - `Phân rã chức năng.txt` Đầu ra `7` ghi ảnh chỉ gợi ý **Tên và loại thực phẩm**; còn `.docx` `FR-03` ghi quét **nhãn bao bì hoặc hóa đơn đi chợ** để trích xuất **Tên, Hạn sử dụng, Thương hiệu**.
-   - *Cần chốt*: Phạm vi AI Scan thực tế sẽ trích xuất những trường nào, xử lý qua API nào (Desktop Server gọi model AI/OCR rồi trả kết quả về Mobile hay giả lập mock ở bước Prototype)?
-8. **Chênh lệch danh sách Input (`17` trường trong `.txt` vs `IN01`–`IN15` trong `.docx`/Ma trận)**:
-   - `Phân rã chức năng.txt` liệt kê thêm `Hình ảnh thực phẩm` và `Khoảng thời gian thống kê` mà bảng `IN01`–`IN15` chưa đánh mã; ngược lại `food_management.sql` không lưu trực tiếp ảnh blob mà dùng `foods.image_url`.
-   - *Cần chốt*: Ảnh thực phẩm sẽ được Mobile upload lên Desktop Server lưu cục bộ rồi ghi đường dẫn vào `image_url`, hay chọn URL/ảnh mẫu?
-9. **Thanh Mô phỏng thời gian (Simulation Bar `-1d, +1d, +3d, +7d`) & Ngày hệ thống**:
-   - Trong `.docx` mục 8.1 Prototype có thanh mô phỏng ngày hệ thống để kiểm thử FEFO nhảy ưu tiên, nhưng `view_fefo_recommendations` và `view_alerts` đang dùng `CURDATE()` của máy chủ MySQL.
-   - *Cần chốt*: Thanh mô phỏng thời gian chỉ đặt trên Desktop Server (`DSK-01`–`DSK-07`) phục vụ demo/kiểm thử (và khi đổi ngày mô phỏng trên Desktop thì Mobile tự đồng bộ theo ngày này), hay ẩn khi chạy thực tế?
-10. **Phạm vi các thao tác bị đánh dấu `*` ("ngoài phạm vi luồng / đề xuất bổ sung") trong Ma trận `2A` & `2B`**:
-    - Trong `ma_tran_2a_luong_modules.png` ghi chú dòng D5: *"sửa, đổi vị trí ngoài phạm vi"*, và `ma_tran_2b_modules_csdl.png` đánh dấu `*` cho thao tác Xóa danh mục (`D*`) tại `M07`. Tuy nhiên tất cả các chức năng này đều có mặt chi tiết trong `Phân rã chức năng.txt` (`2.2`, `2.3`, `2.4`, `2.6`, `2.7`).
-    - *Cần chốt*: Xác nhận giữ nguyên toàn bộ các chức năng trong `Phân rã chức năng.txt` (bao gồm Sửa thực phẩm, Đổi vị trí, Xóa mềm và Quản trị Danh mục) như bản thiết kế hiện tại đã bao phủ.
+1. **Giao thức & Phân tách Client–Server (`PH-04`)**: Đã chốt sử dụng **Python TCP Socket Server (`server/tcp_server.py`) lắng nghe cổng `8080`**, phục vụ **HTTP/1.1 + REST JSON** (15 endpoints `/api/...`) kết hợp **SSE (`/api/events`)** đẩy cập nhật realtime. **Client (cả Mobile Client lẫn Desktop Admin Client) KHÔNG được kết nối hay tương tác trực tiếp với cơ sở dữ liệu** — mọi thao tác chỉ gửi Request tới Server, Server xử lý và trả kết quả về.
+2. **Xác thực & Phân quyền**: Hệ thống dùng chung kho gia đình trong mạng LAN qua địa chỉ `http://<IP>:8080` (không dùng bảng `users`/`roles` hay `PIN 123456`).
+3. **Dữ liệu phi cấu trúc không gắn Relationship (`recipes`, `system_settings`)**: Bảng `recipes` (`required_ingredients` dạng JSON text, `cooking_guide` văn bản hướng dẫn) và `system_settings` (cấu hình key-value tự do) là dữ liệu phi cấu trúc/bán cấu trúc nên đứng **độc lập hoàn toàn trong `database/schema.sql`** — tuyệt đối **không gắn khóa ngoại (`FOREIGN KEY`) hay ràng buộc View chéo**. Mọi phân tích JSON, khớp mã `TP001..TP025` và đọc ngưỡng cấu hình được thực hiện tại tầng Model (`RecipeModel`, `SystemConfigModel`).
+4. **Ngưỡng phân cấp FEFO & Ngày mô phỏng**: Đọc động qua `SystemConfigModel` từ bảng `system_settings` (`simulation_date`, `warning_days_threshold = 3`, `fefo_high_days = 2`, `fefo_medium_days = 5`); các SQL Views (`view_alerts`, `view_fefo_recommendations`) chỉ truy vấn các bảng có cấu trúc với `DATE('now', 'localtime')`.
+5. **Cô lập món hết hạn (`days_left < 0`)**: Tách riêng khỏi danh sách FEFO vào nhóm Nguy cấp / Hết hạn (`expired_excluded_count`) để cảnh báo tiêu hủy.
+6. **Tầng Model đảm nhận xử lý dữ liệu (`server/models/`)**: Thực thi toàn bộ truy vấn, validate, thuật toán FEFO, gợi ý món ăn và giao dịch kho nguyên tử qua các lớp Model (`SystemConfigModel`, `CatalogModel`, `FoodInventoryModel`, `RecipeModel`), gọi `DatabaseTransaction` (`RLock` + SQLite `WAL` mode) trong `server/database.py`. `server/tcp_server.py` đóng vai trò Controller thuần túy, `server/core_services.py` đóng vai trò Facade điều phối Model.
+7. **Phạm vi AI Vision Scan (`FR-03`) & Offline Cache**: Được tách thành **`[Future Scope]`** trên Figma, không gắn API ở giai đoạn 15 REST APIs Core.
+8. **Ảnh thực phẩm**: Lưu đường dẫn tham chiếu `foods.image_url` (không lưu blob nhị phân trong SQLite).
+9. **Thanh mô phỏng thời gian (`-1d, +1d, +3d, +7d`)**: Kích hoạt qua `POST /api/simulation/date` lưu `simulation_date` vào `system_settings` để đồng bộ cả Desktop & Mobile.
+10. **Giữ đầy đủ CRUD danh mục & sửa/xóa mềm**: Bao phủ qua `DSK-06` (`GET /api/catalogs`) và `POST /api/food/delete`, `POST /api/food/adjust`.
+
+---
+
+## 9. BẢNG ĐỐI CHIẾU FIGMA ↔ SQLITE (8 BẢNG, 2 VIEWS) & 15 REST APIs (CORE vs `[FUTURE SCOPE]`) — `QT-02`
+
+> **Nguồn đối chiếu chuẩn:** `Quan_ly_Thuc_Pham/database/schema.sql` (8 bảng SQLite 3NF + 2 Views) & `Quan_ly_Thuc_Pham/server/tcp_server.py` (15 REST APIs trên TCP Port `8080`).  
+> **Trạng thái hoàn thiện (`QT-02`):** Đã hoàn thành ~90% đối chiếu cấu trúc CSDL & gắn nhãn `[Future Scope]`; còn **10% điểm chờ đối chiếu với Hữu Nhân** (`server/core_services.py` nhánh `u4-huunhan`) cho tên trường JSON cuối cùng của **Shopping List 3 quầy** và **Match Score +30% cận hạn**.
+
+### 9.1. Đối chiếu 16 Màn hình Figma ↔ SQLite Schema & 15 REST APIs
+
+| Màn hình Figma | Bảng / View SQLite (`database/schema.sql`) | Cột dữ liệu chuẩn sử dụng trên UI | REST APIs tương ứng (`:8080`) | Phân loại (`Core` / `[Future Scope]`) |
+|---|---|---|---|---|
+| **`DSK-01` Dashboard Server** | `food_items`, `foods`, `categories`, `storage_locations`, `view_fefo_recommendations`, `view_alerts` | `item_id`, `food_code`, `food_name`, `current_quantity`, `min_threshold`, `expiration_date`, `days_left` | `GET /api/status`, `GET /api/events`, `GET /api/fefo`, `GET /api/alerts`, `POST /api/simulation/date` | **Core** |
+| **`DSK-02` Đề xuất FEFO & Món ăn** | `view_fefo_recommendations`, `food_items`, `recipes` | `item_id`, `food_name`, `current_quantity`, `import_date`, `expiration_date`, `priority_level`, `recipe_name`, `required_ingredients`, `cooking_guide` *(nâng cấp FEFO 3 cấp: thêm lô dở dang tồn ít; Match Score +30% cận hạn, bỏ qua gia vị cơ bản — chờ Hữu Nhân chốt tên field JSON)* | `GET /api/fefo`, `GET /api/recipes`, `GET /api/recipes/suggest`, `POST /api/food/use` | **Core** *(90% — chờ Hữu Nhân)* |
+| **`DSK-03` + `DSK-03-D` Kho & Drawer** | `food_items`, `foods`, `categories`, `storage_locations`, `units` | `item_id`, `food_code`, `food_name`, `brand`, `current_quantity`, `min_threshold`, `import_date`, `expiration_date`, `location_name`, `unit_name`, `status`, `notes` *(đã loại bỏ trường `Giá trị ước tính` không có trong SQLite)* | `GET /api/inventory`, `POST /api/food/add`, `POST /api/food/use`, `POST /api/food/adjust`, `POST /api/food/delete` | **Core** *(riêng nút `📷 AI Scan` gắn **`[Future Scope]`**)* |
+| **`DSK-04` Trung tâm Cảnh báo & Đi chợ** | `view_alerts`, `food_items`, `foods`, `storage_locations`, `units` | `item_id`, `food_name`, `current_quantity`, `min_threshold`, `expiration_date`, `days_left`, `alert_type` *(kèm Shopping List gom **3 quầy**: Tươi sống, Rau củ, Đồ khô — chờ Hữu Nhân chốt tên field JSON)* | `GET /api/alerts`, `GET /api/shopping-list`, `POST /api/food/delete`, `POST /api/food/add` | **Core** *(90% — chờ Hữu Nhân)* |
+| **`DSK-05` Nhật ký Kiểm toán** | `inventory_transactions`, `food_items`, `foods`, `units` | `transaction_id`, `item_id`, `action_type`, `change_quantity`, `remaining_quantity`, `reason`, `transaction_time` *(đã gỡ cột `Tác nhân` không có trong SQLite)* | `GET /api/audit-log` | **Core** |
+| **`DSK-06` Quản lý Danh mục** | `categories`, `units`, `storage_locations` | `category_id`, `category_name`, `unit_id`, `unit_name`, `location_id`, `area_type`, `location_name`, `description` | `GET /api/catalogs` *(đọc danh mục; CRUD danh mục nâng cao nếu mở thêm API sau)* | **Core (Read)** |
+| **`DSK-07` Cấu hình Máy chủ** | `system_settings` | `setting_key`, `setting_value` (`simulation_date`, `warning_days_threshold = 3`, `fefo_high_days = 2`, `fefo_medium_days = 5`, `min_quantity_default`) | `GET /api/status`, `GET /api/events`, `POST /api/simulation/date` | **Core** *(Reset Seed / đổi ngưỡng qua DB nếu bổ sung endpoint)* |
+| **`DSK-MODALS` (`DSK-M01..M06`)** | `foods`, `food_items`, `inventory_transactions`, `recipes` | `food_name`, `current_quantity`, `unit_id`, `min_threshold`, `expiration_date`, `location_id`, `notes`, `reason` | `POST /api/food/add`, `POST /api/food/use`, `POST /api/food/adjust`, `POST /api/food/delete` | **Core** |
+| **`MOB-00` Kết nối Server LAN** | — | Địa chỉ IP LAN & TCP Port `8080` (`http://<IP>:8080`) | `GET /api/status`, `GET /api/events` | **Core** *(nút `📷 Quét QR LAN` gắn **`[Future Scope]`**)* |
+| **`MOB-01` Trang chủ FEFO** | `view_fefo_recommendations`, `view_alerts`, `recipes` | `item_id`, `food_name`, `current_quantity`, `expiration_date`, `days_left`, `location_name` + nút **`-1 Dùng nhanh`** 1 chạm | `GET /api/fefo`, `GET /api/alerts`, `GET /api/recipes/suggest`, `POST /api/food/use` (`quantity: 1`) | **Core** *(ô `📷 AI Scan` gắn **`[Future Scope]`**)* |
+| **`MOB-02` Kho tủ lạnh & Lọc** | `food_items`, `foods`, `storage_locations`, `units` | `item_id`, `food_name`, `current_quantity`, `min_threshold`, `expiration_date`, `area_type`, `location_name` | `GET /api/inventory`, `GET /api/catalogs` | **Core** |
+| **`MOB-03` Chi tiết & Action Sheet** | `food_items`, `foods`, `storage_locations`, `units`, `inventory_transactions` | `item_id`, `food_name`, `current_quantity`, `min_threshold`, `import_date`, `expiration_date`, `location_name`, `notes` | `POST /api/food/use`, `POST /api/food/adjust`, `POST /api/food/delete` | **Core** |
+| **`MOB-04` Gợi ý Món ăn** | `recipes`, `food_items`, `foods` | `recipe_id`, `recipe_name`, `required_ingredients`, `cooking_guide` + Match Score `+30%` cận hạn (bỏ qua gia vị cơ bản) | `GET /api/recipes`, `GET /api/recipes/suggest`, `POST /api/food/use` | **Core** *(90% — chờ Hữu Nhân)* |
+| **`MOB-05` Cảnh báo & Mua sắm** | `view_alerts`, `food_items` | `item_id`, `food_name`, `current_quantity`, `min_threshold`, `expiration_date`, `days_left`, `alert_type` + Shopping List gom **3 quầy** | `GET /api/alerts`, `GET /api/shopping-list`, `POST /api/food/delete`, `POST /api/food/add` | **Core** *(90% — chờ Hữu Nhân)* |
+| **`MOB-06` Nhập thực phẩm** | `foods`, `food_items` | `food_name`, `category_id`, `current_quantity`, `unit_id`, `min_threshold`, `expiration_date`, `location_id`, `notes` | `POST /api/food/add`, `GET /api/catalogs` | **Core** *(banner `📷 Quét AI Scan` gắn **`[Future Scope]`**)* |
+| **`MOB-07` Cài đặt & Thống kê** | `inventory_transactions`, `food_items`, `system_settings` | Số lượng giao dịch, tổng mặt hàng/lô đang theo dõi, trạng thái kết nối `:8080` + SSE `/api/events` | `GET /api/status`, `GET /api/events`, `GET /api/audit-log` | **Core** *(mục `Chế độ Offline` gắn **`[Future Scope]`**)* |
+| **`EMPTY-STATES_Suite`** | `food_items`, `recipes`, `view_alerts` | 3 trạng thái rỗng: Tủ lạnh trống, Không có món nấu được, Danh sách đi chợ trống | `GET /api/inventory`, `GET /api/recipes/suggest`, `GET /api/shopping-list` | **Core (`QT-04`)** |
+
+### 9.2. Danh sách Widget `[Future Scope]` (Không gắn API ở giai đoạn Core hiện tại)
+
+1. **`📷 Quét AI Scan` (OCR nhãn bao bì / hóa đơn)** tại `DSK-03`, `MOB-01`, `MOB-06`.
+2. **`📷 Quét QR địa chỉ LAN`** tại `MOB-00` (thay bằng nhập IP:8080 trực tiếp hoặc mở URL trình duyệt LAN).
+3. **`Barcode / Đo nhiệt độ tủ lạnh`** (nếu xuất hiện trong tài liệu mở rộng — không có cột/bảng trong `database/schema.sql`).
+4. **`Chế độ Offline Cache (Offline Read-Only)`** tại `MOB-07`.
+5. **`Giá trị ước tính (VNĐ) / Tiết kiệm (~ đ)`** — đã loại bỏ khỏi `DSK-03-D` và `MOB-07` vì `foods` / `food_items` trong `database/schema.sql` không lưu cột giá tiền.
+
+---
+
+## 10. QUY CHUẨN UI/UX BỔ SUNG ĐÃ ĐỒNG BỘ VỚI FIGMA (`QT-03`, `QT-04`, `QT-05`)
+
+### 10.1. Bộ mã màu cảnh báo 4 cấp (Color-Coded Lifecycle — `QT-03`)
+
+| Trạng thái | Điều kiện nghiệp vụ | Màu sắc & CSS Token | Ký hiệu đi kèm |
+|---|---|---|---|
+| **An toàn** | Hạn dùng còn `> 3 ngày` | **Xanh lục** (`.badge-fresh`: `#166534` / `#DCFCE7`) | Badge an toàn |
+| **Cận hạn (FEFO Cấp 1)** | Hạn dùng còn `1–3 ngày` | **Vàng cam** (`.badge-urgent`: `#92400E` / `#FEF3C7`) | Biểu tượng đồng hồ cát (`⏳`) |
+| **Nguy cấp / Hết hạn** | Quá hạn hoặc hết hạn hôm nay (`<= 0 ngày`) | **Đỏ rực** (`.badge-expired`: `#991B1B` / `#FEE2E2`) | Cảnh báo tiêu hủy |
+| **Cạn kho** | `current_quantity <= min_threshold` | **Tím than** (`.badge-lowstock`: `#312E81` / `#E0E7FF`, viền `#818CF8`, base `#4338CA`) | Nhãn `Cạn kho / Cần mua thêm` |
+
+### 10.2. Bộ 3 Trạng thái rỗng (`EMPTY-STATES_Suite.svg` / `WF-EMPTY-STATES_Suite.svg` — `QT-04`)
+
+1. **`ES-01` — Tủ lạnh chưa có thực phẩm**: Kích hoạt khi `GET /api/inventory` rỗng, kèm nút CTA chính `+ Nhập thực phẩm đầu tiên`.
+2. **`ES-02` — Không có món nào nấu được**: Kích hoạt khi `GET /api/recipes/suggest` không có công thức khớp nguyên liệu hiện có.
+3. **`ES-03` — Danh sách đi chợ trống**: Kích hoạt khi `GET /api/shopping-list` rỗng (mọi mặt hàng đang cao hơn `min_threshold`).
+
+### 10.3. Luồng Mobile 1 tay `Quick Use 1 chạm` (`MOB-01` — `QT-05`)
+
+- Mỗi thẻ thực phẩm FEFO trên `MOB-01` đặt nút **`-1 Dùng nhanh`** (kích thước tối thiểu `>= 44px`) tại góc phải dưới vị trí thuận ngón cái, gọi trực tiếp `POST /api/food/use` (`item_id`, `quantity: 1`) không cần mở Bottom Sheet.
+- Giữ nút **`Tùy chỉnh`** (`>= 44px`) mở Bottom Sheet `MOB-S01` cho nhu cầu nhập số lượng tùy ý (hoặc khi `current_quantity < 1`).

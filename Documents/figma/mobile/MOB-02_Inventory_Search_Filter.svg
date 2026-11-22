@@ -69,29 +69,38 @@
     </g>
 
     <g transform="translate(0, 95)">
-      <rect x="0" y="0" width="358" height="82" rx="10" fill="#1E293B" stroke="#334155" />
+      <rect x="0" y="0" width="358" height="82" rx="10" fill="#1E293B" stroke="#F59E0B" />
       <text x="16" y="48" fill="#FFF" font-size="28">🥛</text>
       <text x="60" y="28" fill="#FFF" font-size="14" font-weight="700">Sữa tươi thanh trùng</text>
       <text x="60" y="48" fill="#94A3B8" font-size="11">Tồn: 2 Hộp (900 ml) • LOT-001</text>
-      <text x="60" y="66" fill="#EF4444" font-size="11" font-weight="600">HSD: 16/11/2026 (Còn 1 ngày)</text>
+      <text x="60" y="66" fill="#FBBF24" font-size="11" font-weight="600">⏳ HSD: 16/11/2026 (Còn 1 ngày)</text>
       <rect x="290" y="26" width="55" height="30" rx="6" fill="#0F766E" /><text x="302" y="45" fill="#FFF" font-size="11">Dùng</text>
 
       <g transform="translate(0, 92)">
-        <rect x="0" y="0" width="358" height="82" rx="10" fill="#1E293B" stroke="#334155" />
+        <rect x="0" y="0" width="358" height="82" rx="10" fill="#1E293B" stroke="#F59E0B" />
         <text x="16" y="48" fill="#FFF" font-size="28">🥩</text>
         <text x="60" y="28" fill="#FFF" font-size="14" font-weight="700">Thịt bò phi lê</text>
         <text x="60" y="48" fill="#94A3B8" font-size="11">Tồn: 500 g • LOT-003</text>
-        <text x="60" y="66" fill="#F59E0B" font-size="11" font-weight="600">HSD: 17/11/2026 (Còn 2 ngày)</text>
+        <text x="60" y="66" fill="#FBBF24" font-size="11" font-weight="600">⏳ HSD: 17/11/2026 (Còn 2 ngày)</text>
         <rect x="290" y="26" width="55" height="30" rx="6" fill="#0F766E" /><text x="302" y="45" fill="#FFF" font-size="11">Dùng</text>
       </g>
 
       <g transform="translate(0, 184)">
-        <rect x="0" y="0" width="358" height="82" rx="10" fill="#1E293B" stroke="#334155" />
+        <rect x="0" y="0" width="358" height="82" rx="10" fill="#1E293B" stroke="#10B981" />
         <text x="16" y="48" fill="#FFF" font-size="28">🥚</text>
         <text x="60" y="28" fill="#FFF" font-size="14" font-weight="700">Trứng gà ta</text>
         <text x="60" y="48" fill="#94A3B8" font-size="11">Tồn: 10 quả • LOT-008</text>
-        <text x="60" y="66" fill="#10B981" font-size="11">HSD: 22/11/2026 (Còn 7 ngày)</text>
+        <text x="60" y="66" fill="#10B981" font-size="11">An toàn: 22/11/2026 (Còn 7 ngày)</text>
         <rect x="290" y="26" width="55" height="30" rx="6" fill="#334155" /><text x="302" y="45" fill="#CBD5E1" font-size="11">Dùng</text>
+      </g>
+
+      <g transform="translate(0, 276)">
+        <rect x="0" y="0" width="358" height="82" rx="10" fill="#1E293B" stroke="#818CF8" />
+        <text x="16" y="48" fill="#FFF" font-size="28">🌾</text>
+        <text x="60" y="28" fill="#FFF" font-size="14" font-weight="700">Gạo ST25 (≤ min_threshold)</text>
+        <text x="60" y="48" fill="#A5B4FC" font-size="11">Tồn: 1 kg / Min: 2 kg • LOT-009</text>
+        <rect x="60" y="55" width="90" height="20" rx="4" fill="#312E81" /><text x="68" y="69" fill="#E0E7FF" font-size="10" font-weight="700">◆ CẠN KHO</text>
+        <rect x="290" y="26" width="55" height="30" rx="6" fill="#312E81" stroke="#818CF8" /><text x="297" y="45" fill="#E0E7FF" font-size="11">Mua</text>
       </g>
     </g>
   </g>

@@ -97,7 +97,7 @@ export interface SystemConfig {
 
 export interface RecipeIngredient {
   ingredient_id: number;
-  food_id: number | null;
+  food_id?: number | null;
   ingredient_name: string;
   quantity: number;
   unit_name: string;

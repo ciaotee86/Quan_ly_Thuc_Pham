@@ -714,9 +714,9 @@ export const SEED_RECIPES: Recipe[] = [
     servings: 3,
     priority_hint: 'Tận dụng thịt ba chỉ cận hạn (+1 ngày) và hành lá đang bảo quản',
     ingredients: [
-      { ingredient_id: 1, food_id: 2, ingredient_name: 'Thịt ba chỉ heo', quantity: 0.4, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 2, food_id: 11, ingredient_name: 'Hành lá & Ngò rí', quantity: 20, unit_name: 'g', is_essential: false },
-      { ingredient_id: 3, food_id: 12, ingredient_name: 'Nước mắm Phú Quốc Khải Hoàn', quantity: 0.05, unit_name: 'chai', is_essential: true },
+      { ingredient_id: 1, food_id: null, ingredient_name: 'Thịt ba chỉ heo', quantity: 0.4, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 2, food_id: null, ingredient_name: 'Hành lá & Ngò rí', quantity: 20, unit_name: 'g', is_essential: false },
+      { ingredient_id: 3, food_id: null, ingredient_name: 'Nước mắm Phú Quốc Khải Hoàn', quantity: 0.05, unit_name: 'chai', is_essential: true },
     ],
     steps: [
       'Rửa sạch thịt ba chỉ, thái miếng mỏng vừa ăn dày khoảng 0.5cm.',
@@ -732,9 +732,9 @@ export const SEED_RECIPES: Recipe[] = [
     servings: 2,
     priority_hint: 'Giải cứu gấp rau xà lách hết hạn hôm nay và cà chua bi (+2 ngày)',
     ingredients: [
-      { ingredient_id: 4, food_id: 3, ingredient_name: 'Rau xà lách mỡ Đà Lạt', quantity: 0.3, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 5, food_id: 8, ingredient_name: 'Cà chua bi hữu cơ', quantity: 0.2, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 6, food_id: 4, ingredient_name: 'Cá hồi Na Uy phi lê', quantity: 0.3, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 4, food_id: null, ingredient_name: 'Rau xà lách mỡ Đà Lạt', quantity: 0.3, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 5, food_id: null, ingredient_name: 'Cà chua bi hữu cơ', quantity: 0.2, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 6, food_id: null, ingredient_name: 'Cá hồi Na Uy phi lê', quantity: 0.3, unit_name: 'kg', is_essential: true },
     ],
     steps: [
       'Ngâm rửa rau xà lách và cà chua bi bổ đôi với nước muối loãng, để ráo.',
@@ -749,9 +749,9 @@ export const SEED_RECIPES: Recipe[] = [
     servings: 2,
     priority_hint: 'Dùng nhanh cà chua bi (+2 ngày) và trứng gà sắp hết hạn (+3 ngày)',
     ingredients: [
-      { ingredient_id: 7, food_id: 6, ingredient_name: 'Trứng gà ta Ba Huân', quantity: 2, unit_name: 'quả', is_essential: true },
-      { ingredient_id: 8, food_id: 8, ingredient_name: 'Cà chua bi hữu cơ', quantity: 0.2, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 9, food_id: 11, ingredient_name: 'Hành lá & Ngò rí', quantity: 15, unit_name: 'g', is_essential: false },
+      { ingredient_id: 7, food_id: null, ingredient_name: 'Trứng gà ta Ba Huân', quantity: 2, unit_name: 'quả', is_essential: true },
+      { ingredient_id: 8, food_id: null, ingredient_name: 'Cà chua bi hữu cơ', quantity: 0.2, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 9, food_id: null, ingredient_name: 'Hành lá & Ngò rí', quantity: 15, unit_name: 'g', is_essential: false },
     ],
     steps: [
       'Đánh tan 2 quả trứng gà với một thìa nước mắm và đầu hành băm.',
@@ -766,9 +766,9 @@ export const SEED_RECIPES: Recipe[] = [
     servings: 3,
     priority_hint: 'Phù hợp tiêu thụ nhanh thịt ba chỉ (+1 ngày) và cải ngọt (+2 ngày)',
     ingredients: [
-      { ingredient_id: 10, food_id: 9, ingredient_name: 'Cải ngọt tươi', quantity: 0.3, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 11, food_id: 2, ingredient_name: 'Thịt ba chỉ heo', quantity: 0.2, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 12, food_id: 11, ingredient_name: 'Hành lá & Ngò rí', quantity: 15, unit_name: 'g', is_essential: false },
+      { ingredient_id: 10, food_id: null, ingredient_name: 'Cải ngọt tươi', quantity: 0.3, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 11, food_id: null, ingredient_name: 'Thịt ba chỉ heo', quantity: 0.2, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 12, food_id: null, ingredient_name: 'Hành lá & Ngò rí', quantity: 15, unit_name: 'g', is_essential: false },
     ],
     steps: [
       'Băm nhỏ thịt ba chỉ, xào thơm với hành và chút nước mắm.',
@@ -783,10 +783,10 @@ export const SEED_RECIPES: Recipe[] = [
     servings: 2,
     priority_hint: 'Kết hợp đồ khô tủ bếp với rau cải ngọt và thịt cận hạn',
     ingredients: [
-      { ingredient_id: 13, food_id: 13, ingredient_name: 'Mì trứng Safoco', quantity: 1, unit_name: 'gói', is_essential: true },
-      { ingredient_id: 14, food_id: 9, ingredient_name: 'Cải ngọt tươi', quantity: 0.2, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 15, food_id: 2, ingredient_name: 'Thịt ba chỉ heo', quantity: 0.2, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 16, food_id: 12, ingredient_name: 'Nước mắm Phú Quốc Khải Hoàn', quantity: 0.05, unit_name: 'chai', is_essential: false },
+      { ingredient_id: 13, food_id: null, ingredient_name: 'Mì trứng Safoco', quantity: 1, unit_name: 'gói', is_essential: true },
+      { ingredient_id: 14, food_id: null, ingredient_name: 'Cải ngọt tươi', quantity: 0.2, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 15, food_id: null, ingredient_name: 'Thịt ba chỉ heo', quantity: 0.2, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 16, food_id: null, ingredient_name: 'Nước mắm Phú Quốc Khải Hoàn', quantity: 0.05, unit_name: 'chai', is_essential: false },
     ],
     steps: [
       'Chần mì trứng trong nước sôi 3 phút, xả nước lạnh và trộn ít dầu ăn cho tơi.',
@@ -801,8 +801,8 @@ export const SEED_RECIPES: Recipe[] = [
     servings: 2,
     priority_hint: 'Món tráng miệng nhanh dùng hết chuối chín bàn ăn và sữa chua ngăn mát',
     ingredients: [
-      { ingredient_id: 17, food_id: 5, ingredient_name: 'Sữa chua nha đam Vinamilk', quantity: 2, unit_name: 'hộp', is_essential: true },
-      { ingredient_id: 18, food_id: 10, ingredient_name: 'Chuối tiêu chín', quantity: 2, unit_name: 'quả', is_essential: true },
+      { ingredient_id: 17, food_id: null, ingredient_name: 'Sữa chua nha đam Vinamilk', quantity: 2, unit_name: 'hộp', is_essential: true },
+      { ingredient_id: 18, food_id: null, ingredient_name: 'Chuối tiêu chín', quantity: 2, unit_name: 'quả', is_essential: true },
     ],
     steps: [
       'Bóc vỏ chuối tiêu, cắt khoanh tròn vừa ăn cho vào bát.',
@@ -816,9 +816,9 @@ export const SEED_RECIPES: Recipe[] = [
     servings: 2,
     priority_hint: 'Demo công thức có nguyên liệu đã hết (Tôm sú đang trạng thái Đã hết)',
     ingredients: [
-      { ingredient_id: 19, food_id: 14, ingredient_name: 'Tôm sú bóc nõn đông lạnh', quantity: 0.3, unit_name: 'kg', is_essential: true },
-      { ingredient_id: 20, food_id: 13, ingredient_name: 'Mì trứng Safoco', quantity: 1, unit_name: 'gói', is_essential: true },
-      { ingredient_id: 21, food_id: 8, ingredient_name: 'Cà chua bi hữu cơ', quantity: 0.2, unit_name: 'kg', is_essential: false },
+      { ingredient_id: 19, food_id: null, ingredient_name: 'Tôm sú bóc nõn đông lạnh', quantity: 0.3, unit_name: 'kg', is_essential: true },
+      { ingredient_id: 20, food_id: null, ingredient_name: 'Mì trứng Safoco', quantity: 1, unit_name: 'gói', is_essential: true },
+      { ingredient_id: 21, food_id: null, ingredient_name: 'Cà chua bi hữu cơ', quantity: 0.2, unit_name: 'kg', is_essential: false },
     ],
     steps: [
       'Rã đông tôm sú, ướp tỏi tiêu nhẹ rồi xào săn.',
