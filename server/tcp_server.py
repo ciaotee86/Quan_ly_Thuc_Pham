@@ -1,72 +1,77 @@
-"""TCP socket HTTP server for the family food-management project.
+"""Raw TCP/HTTP server for the family food-management project.
 
-This module deliberately uses only Python's standard library.  Business rules
-and SQLite access belong to ``server/core_services.py`` and
-``server/database.py`` respectively; this file only parses HTTP, routes requests,
-and returns JSON responses.
+Only Python standard-library modules are used.  This module owns networking,
+HTTP parsing, static-file discovery and SSE broadcasting.  SQLite access and
+business rules stay in the teammates' database.py and core_services.py files.
 
-Run from the repository root with::
-
-    python server/tcp_server.py
+Run from the repository root with: python -m server.tcp_server
 """
 
-from __future__ import annotations
-
-import importlib
-import inspect
-import json
-import logging
 import socket
-import sys
 import threading
-import uuid
-from datetime import datetime, timezone
-from http import HTTPStatus
+import sqlite3
+import json
 from pathlib import Path
-from typing import Any
-from urllib.parse import parse_qs, urlsplit
+import time
+import logging
 
 
 HOST = "0.0.0.0"
 PORT = 8080
 BACKLOG = 50
 RECV_SIZE = 4096
-MAX_HEADER_BYTES = 64 * 1024
-MAX_BODY_BYTES = 1024 * 1024
-CLIENT_TIMEOUT_SECONDS = 15
+MAX_HEADER_BYTES = 65536
+MAX_BODY_BYTES = 1048576
+CLIENT_TIMEOUT_SECONDS = 20
+SSE_HEARTBEAT_SECONDS = 20
 
 LOGGER = logging.getLogger("food_management.tcp_server")
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DATABASE_PATH = PROJECT_ROOT / "database" / "food_management.db"
+
+_state_lock = threading.RLock()
+_subscriber_lock = threading.RLock()
+_subscribers = {}
+_active_clients = set()
+_next_client_id = 1
+
+_STATUS_TEXT = {
+    200: "OK",
+    201: "Created",
+    204: "No Content",
+    400: "Bad Request",
+    404: "Not Found",
+    405: "Method Not Allowed",
+    408: "Request Timeout",
+    411: "Length Required",
+    413: "Payload Too Large",
+    415: "Unsupported Media Type",
+    422: "Unprocessable Entity",
+    500: "Internal Server Error",
+    501: "Not Implemented",
+    503: "Service Unavailable",
+}
 
 
-class HttpRequestError(Exception):
-    """An invalid or incomplete HTTP request received from a client."""
-
-    def __init__(self, message: str, status: int = HTTPStatus.BAD_REQUEST) -> None:
+class RequestError(Exception):
+    def __init__(self, message, status=400):
         super().__init__(message)
-        self.status = int(status)
+        self.status = status
 
 
-class ServiceUnavailableError(Exception):
-    """Raised when the team's core-services module is not ready yet."""
+class ServiceUnavailable(Exception):
+    pass
 
 
-def _utc_timestamp() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+def _json_bytes(value):
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":"), default=str).encode("utf-8")
 
 
-def _json_response(
-    status: int,
-    payload: Any = None,
-    *,
-    headers: dict[str, str] | None = None,
-) -> bytes:
-    """Build one complete HTTP/1.1 JSON response, including CORS headers."""
-    body = b"" if payload is None else json.dumps(
-        payload, ensure_ascii=False, separators=(",", ":"), default=str
-    ).encode("utf-8")
-    reason = HTTPStatus(status).phrase if status in HTTPStatus._value2member_map_ else "Unknown"
-    response_headers = {
-        "Content-Type": "application/json; charset=utf-8",
+def _response(status, body=b"", content_type="application/json; charset=utf-8", extra_headers=None):
+    if isinstance(body, str):
+        body = body.encode("utf-8")
+    headers = {
+        "Content-Type": content_type,
         "Content-Length": str(len(body)),
         "Connection": "close",
         "Access-Control-Allow-Origin": "*",
@@ -76,337 +81,461 @@ def _json_response(
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
     }
-    if headers:
-        response_headers.update(headers)
-    head = [f"HTTP/1.1 {status} {reason}\r\n"]
-    head.extend(f"{key}: {value}\r\n" for key, value in response_headers.items())
-    head.append("\r\n")
-    return "".join(head).encode("ascii") + body
+    if extra_headers:
+        headers.update(extra_headers)
+    status_text = _STATUS_TEXT.get(status, "Unknown")
+    header_text = "HTTP/1.1 {} {}\r\n".format(status, status_text)
+    for name, value in headers.items():
+        header_text += "{}: {}\r\n".format(name, value)
+    return header_text.encode("ascii") + b"\r\n" + body
 
 
-def _read_http_request(client_sock: socket.socket) -> tuple[str, str, dict[str, str], bytes]:
-    """Read one HTTP request, honoring Content-Length across recv() chunks."""
-    received = bytearray()
+def _read_request(client_sock):
+    """Read header through CRLFCRLF, then exactly Content-Length body bytes."""
+    data = bytearray()
     header_end = -1
     while header_end < 0:
         chunk = client_sock.recv(RECV_SIZE)
         if not chunk:
-            raise HttpRequestError("Client closed the connection before sending headers.")
-        received.extend(chunk)
-        if len(received) > MAX_HEADER_BYTES and b"\r\n\r\n" not in received:
-            raise HttpRequestError("Request headers are too large.", HTTPStatus.REQUEST_HEADER_FIELDS_TOO_LARGE)
-        header_end = received.find(b"\r\n\r\n")
+            raise RequestError("Client đóng kết nối trước khi gửi HTTP header.")
+        data.extend(chunk)
+        header_end = data.find(b"\r\n\r\n")
+        if header_end < 0 and len(data) > MAX_HEADER_BYTES:
+            raise RequestError("HTTP header quá lớn.", 413)
 
-    raw_headers = bytes(received[:header_end])
-    body = bytearray(received[header_end + 4 :])
     try:
-        header_text = raw_headers.decode("iso-8859-1")
-    except UnicodeDecodeError as exc:
-        raise HttpRequestError("Invalid request headers.") from exc
-
+        header_text = bytes(data[:header_end]).decode("iso-8859-1")
+    except UnicodeDecodeError:
+        raise RequestError("HTTP header không hợp lệ.")
     lines = header_text.split("\r\n")
     request_line = lines[0].split()
-    if len(request_line) != 3:
-        raise HttpRequestError("Malformed HTTP request line.")
-    method, target, http_version = request_line
-    if not http_version.startswith("HTTP/"):
-        raise HttpRequestError("Unsupported HTTP version.")
-
-    headers: dict[str, str] = {}
+    if len(request_line) != 3 or not request_line[2].startswith("HTTP/"):
+        raise RequestError("Request line không hợp lệ.")
+    method, target, _version = request_line
+    headers = {}
     for line in lines[1:]:
         if not line:
             continue
         if ":" not in line:
-            raise HttpRequestError("Malformed HTTP header.")
-        key, value = line.split(":", 1)
-        key = key.strip().lower()
-        if not key:
-            raise HttpRequestError("Malformed HTTP header name.")
-        headers[key] = value.strip()
+            raise RequestError("HTTP header không đúng định dạng.")
+        name, value = line.split(":", 1)
+        headers[name.strip().lower()] = value.strip()
 
     if headers.get("transfer-encoding", "").lower() == "chunked":
-        raise HttpRequestError("Chunked request bodies are not supported; send Content-Length.")
+        raise RequestError("Server yêu cầu Content-Length; chưa hỗ trợ chunked body.", 411)
     try:
         content_length = int(headers.get("content-length", "0"))
-    except ValueError as exc:
-        raise HttpRequestError("Content-Length must be an integer.") from exc
+    except ValueError:
+        raise RequestError("Content-Length phải là số nguyên.")
     if content_length < 0:
-        raise HttpRequestError("Content-Length cannot be negative.")
+        raise RequestError("Content-Length không được âm.")
     if content_length > MAX_BODY_BYTES:
-        raise HttpRequestError("Request body is too large.", HTTPStatus.REQUEST_ENTITY_TOO_LARGE)
+        raise RequestError("Body vượt quá giới hạn 1 MB.", 413)
+    if method.upper() == "POST" and "content-length" not in headers:
+        raise RequestError("POST request phải khai báo Content-Length.", 411)
 
+    body = bytearray(data[header_end + 4:])
     while len(body) < content_length:
         chunk = client_sock.recv(min(RECV_SIZE, content_length - len(body)))
         if not chunk:
-            raise HttpRequestError("Request body ended before Content-Length bytes arrived.")
+            raise RequestError("Body kết thúc trước Content-Length.")
         body.extend(chunk)
-
     return method.upper(), target, headers, bytes(body[:content_length])
 
 
-def _load_core_services() -> Any:
-    """Import the teammate-owned service layer only when an API call needs it."""
-    project_root = str(Path(__file__).resolve().parent.parent)
-    if project_root not in sys.path:
-        sys.path.insert(0, project_root)
-    try:
-        return importlib.import_module("server.core_services")
-    except ModuleNotFoundError as exc:
-        # Do not disguise an import error inside core_services as a missing file.
-        if exc.name in {"server", "server.core_services"}:
-            raise ServiceUnavailableError(
-                "Chưa có server/core_services.py. Hãy ghép Phần 2 để bật nghiệp vụ API."
-            ) from exc
-        raise ServiceUnavailableError(
-            f"Không thể nạp tầng nghiệp vụ do thiếu module: {exc.name}."
-        ) from exc
+def _split_target(target):
+    path, separator, query_text = target.partition("?")
+    path = path or "/"
+    if path != "/":
+        path = path.rstrip("/")
+    query = {}
+    if separator:
+        for pair in query_text.split("&"):
+            if not pair:
+                continue
+            key, equals, value = pair.partition("=")
+            key = key.replace("+", " ")
+            value = value.replace("+", " ") if equals else ""
+            if key:
+                query[key] = value
+    return path, query
 
 
-def _find_service(services: Any, candidates: tuple[str, ...]) -> Any:
-    for name in candidates:
-        function = getattr(services, name, None)
-        if callable(function):
-            return function
-    names = ", ".join(candidates)
-    raise ServiceUnavailableError(
-        f"Tầng nghiệp vụ chưa khai báo hàm phù hợp (đang tìm: {names})."
-    )
-
-
-def _call_with_query(function: Any, query: dict[str, str]) -> Any:
-    """Pass only query parameters accepted by a service function."""
-    try:
-        signature = inspect.signature(function)
-    except (TypeError, ValueError):
-        return function()
-    parameters = signature.parameters
-    if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in parameters.values()):
-        return function(**query)
-    accepted = {
-        name: value
-        for name, value in query.items()
-        if name in parameters
-        and parameters[name].kind
-        in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
-    }
-    return function(**accepted)
-
-
-def _call_with_payload(function: Any, payload: dict[str, Any]) -> Any:
-    """Adapt a JSON object to a service function's declared parameters."""
-    try:
-        signature = inspect.signature(function)
-    except (TypeError, ValueError):
-        return function(payload)
-    parameters = signature.parameters
-    if any(p.kind == inspect.Parameter.VAR_KEYWORD for p in parameters.values()):
-        return function(**payload)
-    if len(parameters) == 1:
-        only_parameter = next(iter(parameters.values()))
-        if only_parameter.name in {"payload", "data", "body", "request_data"}:
-            return function(payload)
-    accepted = {
-        name: value
-        for name, value in payload.items()
-        if name in parameters
-        and parameters[name].kind
-        in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
-    }
-    required = [
-        p.name
-        for p in parameters.values()
-        if p.default is inspect.Parameter.empty
-        and p.kind in (inspect.Parameter.POSITIONAL_OR_KEYWORD, inspect.Parameter.KEYWORD_ONLY)
-    ]
-    missing = [name for name in required if name not in accepted]
-    if missing:
-        raise HttpRequestError(f"Thiếu trường bắt buộc trong JSON: {', '.join(missing)}.")
-    return function(**accepted)
-
-
-def _unwrap_query(query_values: dict[str, list[str]]) -> dict[str, str]:
-    return {key: values[-1] for key, values in query_values.items() if values}
-
-
-def _parse_json_body(body: bytes) -> dict[str, Any]:
+def _read_json_body(headers, body):
     if not body:
         return {}
+    content_type = headers.get("content-type", "").split(";", 1)[0].strip().lower()
+    if content_type and content_type != "application/json":
+        raise RequestError("Body POST phải có Content-Type: application/json.", 415)
     try:
         value = json.loads(body.decode("utf-8"))
-    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
-        raise HttpRequestError("Body phải là JSON UTF-8 hợp lệ.") from exc
+    except (UnicodeDecodeError, ValueError):
+        raise RequestError("Body phải là JSON UTF-8 hợp lệ.")
     if not isinstance(value, dict):
-        raise HttpRequestError("Body JSON phải là một object.")
+        raise RequestError("JSON body phải là object.")
     return value
 
 
-def _dispatch(method: str, path: str, query: dict[str, str], payload: dict[str, Any]) -> tuple[int, Any]:
-    """Route the agreed REST endpoints to the Part 2 business services."""
-    if method == "OPTIONS":
-        return HTTPStatus.NO_CONTENT, None
+def _load_core_services():
+    # Run from the repository root with `python -m server.tcp_server` so the
+    # teammate-owned server package can be imported without changing sys.path.
+    try:
+        from server import core_services
+    except ModuleNotFoundError as error:
+        if error.name in ("server", "server.core_services"):
+            raise ServiceUnavailable(
+                "Chưa có server/core_services.py; API nghiệp vụ sẽ hoạt động sau khi ghép Phần 2."
+            )
+        raise ServiceUnavailable("Không nạp được core_services: thiếu module {}.".format(error.name))
+    return core_services
 
-    route_methods: dict[str, str] = {
-        "/api/fefo": "GET",
+
+def _service_function(services, names):
+    for name in names:
+        function = getattr(services, name, None)
+        if callable(function):
+            return function
+    raise ServiceUnavailable("core_services chưa có hàm: {}.".format(" / ".join(names)))
+
+
+def _call_query(function, query):
+    if query:
+        return function(**query)
+    return function()
+
+
+def _call_payload(function, payload):
+    return function(**payload)
+
+
+def _database_is_healthy():
+    if not DATABASE_PATH.is_file():
+        return False
+    connection = None
+    try:
+        connection = sqlite3.connect(str(DATABASE_PATH), timeout=2)
+        connection.execute("SELECT 1").fetchone()
+        return True
+    except sqlite3.Error:
+        return False
+    finally:
+        if connection is not None:
+            connection.close()
+
+
+def _server_status():
+    with _state_lock:
+        client_count = len(_active_clients)
+    return {
+        "ok": True,
+        "server": {"running": True, "host": HOST, "port": PORT},
+        "database": {
+            "healthy": _database_is_healthy(),
+            "path": str(DATABASE_PATH),
+        },
+        "connected_clients": client_count,
+    }
+
+
+def _route_api(method, path, query, payload):
+    if method == "OPTIONS":
+        return 204, b""
+    route_methods = {
+        "/api/status": "GET",
+        "/api/catalogs": "GET",
         "/api/inventory": "GET",
+        "/api/fefo": "GET",
+        "/api/alerts": "GET",
+        "/api/recipes": "GET",
+        "/api/recipes/suggest": "GET",
+        "/api/shopping-list": "GET",
+        "/api/audit-log": "GET",
         "/api/food/add": "POST",
         "/api/food/use": "POST",
         "/api/food/adjust": "POST",
         "/api/food/delete": "POST",
-        "/api/alerts": "GET",
-        "/api/audit-log": "GET",
         "/api/simulation/date": "POST",
     }
-    expected_method = route_methods.get(path)
-    if expected_method is None:
-        return HTTPStatus.NOT_FOUND, {"error": "Không tìm thấy API.", "path": path}
-    if method != expected_method:
-        return HTTPStatus.METHOD_NOT_ALLOWED, {
-            "error": "Phương thức HTTP không được hỗ trợ cho API này.",
-            "expected_method": expected_method,
+    if path not in route_methods:
+        return 404, {"error": "Không tìm thấy API.", "path": path}
+    if method != route_methods[path]:
+        return 405, {
+            "error": "Sai HTTP method.",
+            "expected_method": route_methods[path],
         }
+    if path == "/api/status":
+        return 200, _server_status()
 
     services = _load_core_services()
-    if path == "/api/fefo":
-        function = _find_service(
-            services,
-            ("get_fefo_recommendations", "get_fefo_items", "get_fefo_list", "get_fefo"),
-        )
-        return HTTPStatus.OK, _call_with_query(function, query)
-    if path == "/api/inventory":
-        function = _find_service(
-            services, ("get_inventory", "get_all_inventory", "list_food_items", "get_food_items")
-        )
-        return HTTPStatus.OK, _call_with_query(function, query)
-    if path == "/api/food/add":
-        function = _find_service(services, ("add_food", "add_food_item", "create_food_item"))
-        return HTTPStatus.CREATED, _call_with_payload(function, payload)
+    get_routes = {
+        "/api/catalogs": ("get_catalogs", "get_catalog_bundle", "list_catalogs"),
+        "/api/inventory": ("get_inventory", "get_all_inventory", "list_food_items", "get_food_items"),
+        "/api/fefo": ("get_fefo_recommendations", "get_fefo_items", "get_fefo_list", "get_fefo"),
+        "/api/alerts": ("get_alerts", "get_inventory_alerts", "scan_alerts"),
+        "/api/recipes": ("get_recipes", "list_recipes"),
+        "/api/recipes/suggest": ("get_recipe_suggestions", "suggest_recipes", "recommend_recipes"),
+        "/api/shopping-list": ("get_shopping_list", "generate_shopping_list"),
+        "/api/audit-log": ("get_audit_log", "get_audit_logs", "list_inventory_transactions"),
+    }
+    if path in get_routes:
+        function = _service_function(services, get_routes[path])
+        return 200, _call_query(function, query)
+
+    post_routes = {
+        "/api/food/add": ("add_food", "add_food_item", "create_food_item"),
+        "/api/food/adjust": ("adjust_food", "adjust_food_quantity", "adjust_inventory"),
+        "/api/food/delete": ("soft_delete_food", "delete_food", "delete_food_item"),
+        "/api/simulation/date": ("set_simulation_date", "set_system_date", "update_simulation_date"),
+    }
     if path == "/api/food/use":
-        function = _find_service(services, ("use_food",))
+        function = _service_function(services, ("use_food",))
         item_id = payload.get("item_id")
         quantity = payload.get("quantity", payload.get("quantity_used"))
         reason = payload.get("reason", "")
         if item_id is None or quantity is None:
-            raise HttpRequestError("JSON cần có item_id và quantity (hoặc quantity_used).")
+            raise RequestError("POST /api/food/use cần item_id và quantity.")
         try:
             result = function(int(item_id), float(quantity), str(reason))
-        except (TypeError, ValueError) as exc:
-            raise HttpRequestError("item_id và quantity phải là số hợp lệ.") from exc
-        return HTTPStatus.OK, result
-    if path == "/api/food/adjust":
-        function = _find_service(
-            services, ("adjust_food", "adjust_food_quantity", "adjust_inventory")
-        )
-        return HTTPStatus.OK, _call_with_payload(function, payload)
-    if path == "/api/food/delete":
-        function = _find_service(
-            services, ("soft_delete_food", "delete_food", "delete_food_item")
-        )
-        return HTTPStatus.OK, _call_with_payload(function, payload)
-    if path == "/api/alerts":
-        function = _find_service(services, ("get_alerts", "get_inventory_alerts", "scan_alerts"))
-        return HTTPStatus.OK, _call_with_query(function, query)
-    if path == "/api/audit-log":
-        function = _find_service(
-            services, ("get_audit_log", "get_audit_logs", "list_inventory_transactions")
-        )
-        return HTTPStatus.OK, _call_with_query(function, query)
-    if path == "/api/simulation/date":
-        function = _find_service(
-            services, ("set_simulation_date", "set_system_date", "update_simulation_date")
-        )
-        return HTTPStatus.OK, _call_with_payload(function, payload)
-    return HTTPStatus.NOT_FOUND, {"error": "Không tìm thấy API.", "path": path}
+        except (TypeError, ValueError):
+            raise RequestError("item_id và quantity phải là số hợp lệ.")
+        return 200, result
+    function = _service_function(services, post_routes[path])
+    result = _call_payload(function, payload)
+    return (201 if path == "/api/food/add" else 200), result
 
 
-def _handle_client(client_sock: socket.socket, client_address: tuple[str, int]) -> None:
-    request_id = uuid.uuid4().hex[:12]
-    started_at = datetime.now(timezone.utc)
-    client_sock.settimeout(CLIENT_TIMEOUT_SECONDS)
+def _find_static_root():
+    candidates = (
+        PROJECT_ROOT / "client",
+        PROJECT_ROOT / "uidukien",
+        PROJECT_ROOT / "TongHopvaTest" / "client",
+    )
+    for candidate in candidates:
+        if candidate.is_dir() and (candidate / "index.html").is_file():
+            return candidate.resolve()
+    return None
+
+
+def _static_content_type(path):
+    suffix = path.suffix.lower()
+    content_types = {
+        ".html": "text/html; charset=utf-8",
+        ".css": "text/css; charset=utf-8",
+        ".js": "application/javascript; charset=utf-8",
+        ".json": "application/json; charset=utf-8",
+        ".svg": "image/svg+xml",
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".ico": "image/x-icon",
+        ".txt": "text/plain; charset=utf-8",
+    }
+    return content_types.get(suffix, "application/octet-stream")
+
+
+def _serve_static(path):
+    static_root = _find_static_root()
+    if static_root is None:
+        return 404, {"error": "Không tìm thấy giao diện tĩnh (client/, uidukien/ hoặc TongHopvaTest/client/)."}
+    relative_name = "index.html" if path == "/" else path.lstrip("/").replace("\\", "/")
+    relative_path = Path(relative_name)
+    if ".." in relative_path.parts:
+        return 404, {"error": "Không tìm thấy tài nguyên."}
+    target = (static_root / relative_path).resolve()
     try:
-        method, target, headers, body = _read_http_request(client_sock)
-        parsed_target = urlsplit(target)
-        path = parsed_target.path.rstrip("/") or "/"
-        query = _unwrap_query(parse_qs(parsed_target.query, keep_blank_values=True))
-        if method == "OPTIONS":
-            status, result = HTTPStatus.NO_CONTENT, None
-        else:
-            payload = _parse_json_body(body) if method == "POST" else {}
-            status, result = _dispatch(method, path, query, payload)
-        response_payload = result
-        if status >= 400:
-            response_payload = {
-                "error": result.get("error", "Yêu cầu không thành công.")
-                if isinstance(result, dict)
-                else str(result),
-                "request_id": request_id,
-            }
-            if isinstance(result, dict):
-                response_payload.update({k: v for k, v in result.items() if k != "error"})
-        response = _json_response(int(status), response_payload)
-        LOGGER.info("%s %s %s -> %s", client_address[0], method, path, status)
-    except HttpRequestError as exc:
-        response = _json_response(
-            exc.status,
-            {"error": str(exc), "request_id": request_id},
-        )
-        LOGGER.warning("%s invalid request: %s", client_address[0], exc)
-    except ServiceUnavailableError as exc:
-        response = _json_response(
-            HTTPStatus.SERVICE_UNAVAILABLE,
-            {"error": str(exc), "request_id": request_id},
-        )
-        LOGGER.warning("%s service unavailable: %s", client_address[0], exc)
-    except socket.timeout:
-        response = _json_response(
-            HTTPStatus.REQUEST_TIMEOUT,
-            {"error": "Hết thời gian chờ dữ liệu từ client.", "request_id": request_id},
-        )
-        LOGGER.warning("%s request timed out", client_address[0])
-    except Exception:
-        response = _json_response(
-            HTTPStatus.INTERNAL_SERVER_ERROR,
-            {"error": "Lỗi nội bộ máy chủ.", "request_id": request_id},
-        )
-        LOGGER.exception("%s request failed", client_address[0])
-
+        target.relative_to(static_root)
+    except ValueError:
+        return 404, {"error": "Không tìm thấy tài nguyên."}
+    if not target.is_file():
+        return 404, {"error": "Không tìm thấy tài nguyên.", "path": path}
     try:
-        client_sock.sendall(response)
+        return 200, target.read_bytes(), _static_content_type(target)
     except OSError:
-        LOGGER.debug("Could not send response to %s", client_address[0])
+        return 500, {"error": "Không đọc được tài nguyên tĩnh."}
+
+
+def _sse_frame(event_name, data):
+    return (
+        "event: {}\ndata: {}\n\n".format(
+            event_name,
+            json.dumps(data, ensure_ascii=False, separators=(",", ":"), default=str),
+        )
+    ).encode("utf-8")
+
+
+def _remove_subscriber(subscriber_id):
+    with _subscriber_lock:
+        subscriber = _subscribers.pop(subscriber_id, None)
+    if subscriber is not None:
+        try:
+            subscriber["socket"].shutdown(socket.SHUT_RDWR)
+        except OSError:
+            pass
+        try:
+            subscriber["socket"].close()
+        except OSError:
+            pass
+
+
+def _broadcast_event(event_name, details=None):
+    event_data = {
+        "type": event_name,
+        "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "data": details or {},
+    }
+    frame = _sse_frame(event_name, event_data)
+    with _subscriber_lock:
+        subscribers = list(_subscribers.items())
+    dead_ids = []
+    for subscriber_id, subscriber in subscribers:
+        try:
+            with subscriber["send_lock"]:
+                subscriber["socket"].sendall(frame)
+        except OSError:
+            dead_ids.append(subscriber_id)
+    for subscriber_id in dead_ids:
+        LOGGER.info("Removing disconnected SSE client %s", subscriber_id)
+        _remove_subscriber(subscriber_id)
+
+
+def _serve_sse(client_sock, client_id):
+    subscriber = {"socket": client_sock, "send_lock": threading.Lock()}
+    with _subscriber_lock:
+        _subscribers[client_id] = subscriber
+    header = (
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/event-stream; charset=utf-8\r\n"
+        "Cache-Control: no-cache\r\n"
+        "Connection: keep-alive\r\n"
+        "Access-Control-Allow-Origin: *\r\n"
+        "Access-Control-Allow-Headers: Content-Type, Authorization\r\n"
+        "X-Accel-Buffering: no\r\n\r\n"
+    ).encode("ascii")
+    try:
+        with subscriber["send_lock"]:
+            client_sock.sendall(header + b": connected\n\n")
+        while True:
+            time.sleep(SSE_HEARTBEAT_SECONDS)
+            # SSE comment heartbeat lets clients detect broken Wi-Fi sessions.
+            with subscriber["send_lock"]:
+                client_sock.sendall(b": keep-alive\n\n")
+    except OSError:
+        LOGGER.info("SSE client %s disconnected", client_id)
     finally:
-        elapsed_ms = (datetime.now(timezone.utc) - started_at).total_seconds() * 1000
-        LOGGER.debug("request_id=%s duration_ms=%.1f", request_id, elapsed_ms)
+        _remove_subscriber(client_id)
+
+
+def _handle_client(client_sock, address, client_id):
+    try:
+        client_sock.settimeout(CLIENT_TIMEOUT_SECONDS)
+        method, target, headers, body = _read_request(client_sock)
+        path, query = _split_target(target)
+        if method == "OPTIONS":
+            client_sock.sendall(_response(204))
+            return
+
+        if path == "/api/events":
+            if method != "GET":
+                client_sock.sendall(_response(405, _json_bytes({"error": "SSE chỉ hỗ trợ GET."})))
+                return
+            _serve_sse(client_sock, client_id)
+            return
+
+        if path.startswith("/api/"):
+            payload = _read_json_body(headers, body) if method == "POST" else {}
+            status, result = _route_api(method, path, query, payload)
+            if status >= 400 and isinstance(result, dict):
+                result.setdefault("request_id", str(client_id))
+            response = _response(status, _json_bytes(result) if result != b"" else b"")
+            client_sock.sendall(response)
+            if status < 400 and method == "POST":
+                event_name = "SIMULATION_DATE_CHANGED" if path == "/api/simulation/date" else "INVENTORY_CHANGED"
+                _broadcast_event(event_name, {"path": path, "result": result})
+            LOGGER.info("%s %s %s -> %s", address[0], method, path, status)
+            return
+
+        if method != "GET":
+            client_sock.sendall(_response(405, _json_bytes({"error": "Tài nguyên tĩnh chỉ hỗ trợ GET."})))
+            return
+        static_result = _serve_static(path)
+        status = static_result[0]
+        if len(static_result) == 3:
+            _, static_body, content_type = static_result
+        else:
+            _, value = static_result
+            static_body = _json_bytes(value)
+            content_type = "application/json; charset=utf-8"
+        client_sock.sendall(_response(status, static_body, content_type))
+    except RequestError as error:
+        try:
+            client_sock.sendall(_response(error.status, _json_bytes({"error": str(error)})))
+        except OSError:
+            pass
+    except socket.timeout:
+        try:
+            client_sock.sendall(_response(408, _json_bytes({"error": "Client gửi request quá thời gian."})))
+        except OSError:
+            pass
+    except ServiceUnavailable as error:
+        try:
+            client_sock.sendall(_response(503, _json_bytes({"error": str(error)})))
+        except OSError:
+            pass
+    except (sqlite3.Error, OSError):
+        LOGGER.exception("Request from %s failed due to socket or SQLite error", address[0])
+        try:
+            client_sock.sendall(_response(500, _json_bytes({"error": "Lỗi máy chủ nội bộ."})))
+        except OSError:
+            pass
+    except Exception:
+        LOGGER.exception("Unhandled request error from %s", address[0])
+        try:
+            client_sock.sendall(_response(500, _json_bytes({"error": "Lỗi máy chủ nội bộ."})))
+        except OSError:
+            pass
+    finally:
+        # SSE owns the socket for the lifetime of the event stream. Its finally
+        # block will close it here when that worker returns.
+        with _state_lock:
+            _active_clients.discard(client_id)
         try:
             client_sock.shutdown(socket.SHUT_RDWR)
         except OSError:
             pass
-        client_sock.close()
+        try:
+            client_sock.close()
+        except OSError:
+            pass
 
 
-def serve_forever(host: str = HOST, port: int = PORT) -> None:
-    """Bind the required TCP socket and serve each accepted client in a thread."""
+def serve_forever(host=HOST, port=PORT):
+    global _next_client_id
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_sock:
         server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_sock.bind((host, port))
         server_sock.listen(BACKLOG)
-        LOGGER.info("Food Management TCP server listening on %s:%s", host, port)
-        print(f"Máy chủ TCP đang lắng nghe tại {host}:{port}")
-        print("Nhấn Ctrl+C để dừng máy chủ.")
+        LOGGER.info("TCP server listening on %s:%s", host, port)
+        print("Máy chủ TCP đang chạy tại {}:{}".format(host, port))
+        print("Nhấn Ctrl+C để dừng.")
         try:
             while True:
-                client_sock, client_address = server_sock.accept()
+                client_sock, address = server_sock.accept()
+                with _state_lock:
+                    client_id = _next_client_id
+                    _next_client_id += 1
+                    _active_clients.add(client_id)
                 worker = threading.Thread(
                     target=_handle_client,
-                    args=(client_sock, client_address),
-                    name=f"client-{client_address[0]}-{client_address[1]}",
+                    args=(client_sock, address, client_id),
+                    name="tcp-client-{}".format(client_id),
                     daemon=True,
                 )
                 worker.start()
         except KeyboardInterrupt:
-            print("\nĐã dừng máy chủ TCP.")
+            print("\nĐã dừng TCP server.")
 
 
-def main() -> None:
+def main():
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
