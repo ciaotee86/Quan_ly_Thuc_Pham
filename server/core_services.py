@@ -1,11 +1,7 @@
 """
 server/core_services.py
 =============================================================================
-ĐỘNG CƠ LÕI NGHIỆP VỤ & THUẬT TOÁN FEFO (PHẦN 2)
-Dự án: Quản lý thực phẩm gia đình - Môn Lập trình Mạng (TS. Đặng Hùng Vĩ)
-Nhóm thực hiện: Nhóm Thầy Bùa Mao Sơn
-Kỹ sư phụ trách: Nguyễn Hữu Nhân (Mảng Động cơ Thuật toán & Nghiệp vụ Lõi)
-
+ĐỘNG CƠ LÕI NGHIỆP VỤ & THUẬT TOÁN FEFO
 CÁC TÍNH NĂNG NÂNG CẤP ĐỘT PHÁ:
 1. Thuật toán hòa hạn FEFO 3 cấp độ (Multi-level Tie-breaker):
    - Tầng 1: Hạn dùng gần nhất trước (expiry_date ASC).
@@ -35,10 +31,10 @@ from server.database import (
     get_connection
 )
 
-# -----------------------------------------------------------------------------
+
 # DANH MỤC GIA VỊ CƠ BẢN (PANTRY STAPLES WHITE-LIST)
 # Quy tắc: Thiếu gia vị cơ bản không trừ điểm Match Score công thức món ăn
-# -----------------------------------------------------------------------------
+
 BASIC_STAPLES_WHITELIST = {
     "muối", "muối ăn", "đường", "đường cát", "tiêu", "tiêu đen", "tiêu đen xay",
     "tiêu sọ", "tiêu đen xay phú quốc", "nước mắm", "nước mắm nam ngư", "hạt nêm",
@@ -47,9 +43,8 @@ BASIC_STAPLES_WHITELIST = {
 }
 
 
-# -----------------------------------------------------------------------------
+
 # 1. QUẢN LÝ NGÀY GIẢ LẬP HỆ THỐNG & CẤU HÌNH NGƯỠNG (SYSTEM CONFIG)
-# -----------------------------------------------------------------------------
 
 def get_system_config() -> Dict[str, Any]:
     """
@@ -105,9 +100,8 @@ def set_system_date(new_date_str: str) -> Dict[str, Any]:
     }
 
 
-# -----------------------------------------------------------------------------
+
 # 2. HÀM TÍNH NGÀY CÒN LẠI & PHÂN LOẠI MỨC ĐỘ ƯU TIÊN FEFO
-# -----------------------------------------------------------------------------
 
 def calculate_days_left(expiry_date: str, system_date: Optional[str] = None) -> int:
     """
@@ -198,9 +192,8 @@ def build_suggested_action(priority: str) -> str:
         return "Bảo quản tiếp tục"
 
 
-# -----------------------------------------------------------------------------
+
 # 3. THUẬT TOÁN ĐỀ XUẤT FEFO 3 CẤP ĐỘ (MULTI-LEVEL TIE-BREAKER)
-# -----------------------------------------------------------------------------
 
 def get_fefo_recommendations(
     include_expired: bool = False,
@@ -276,13 +269,13 @@ def get_fefo_recommendations(
         it_dict['expiration_date'] = exp_date
         eligible_lots.append(it_dict)
 
-    # -------------------------------------------------------------------------
+    
     # NÂNG CẤP THUẬT TOÁN HÒA HẠN 3 TẦNG (MULTI-LEVEL TIE-BREAKER)
     # Tầng 1: expiry_date ASC (FEFO)
     # Tầng 2: import_date ASC (FIFO)
     # Tầng 3: current_quantity ASC (Dung tích tồn - Lô dở dang ưu tiên giải phóng diện tích)
     # Tầng 4: item_id ASC (Xác định tuyệt đối)
-    # -------------------------------------------------------------------------
+   
     eligible_lots.sort(
         key=lambda x: (
             x['expiry_date'],
@@ -567,10 +560,10 @@ def suggest_recipes(
                         "matched_item_id": None
                     })
 
-        # ---------------------------------------------------------------------
+        
         # TÍNH MATCH SCORE CẢI TIẾN:
         # Base Score tính trên tỉ lệ nguyên liệu CHÍNH (không phạt gia vị cơ bản)
-        # ---------------------------------------------------------------------
+       
         if core_required_count > 0:
             base_score = round((core_ready_count / core_required_count) * 100, 1)
         else:
@@ -629,10 +622,10 @@ def suggest_recipes(
     return results
 
 
-# -----------------------------------------------------------------------------
+
 # 5. THUẬT TOÁN GOM CỤM DANH SÁCH ĐI CHỢ THÔNG MINH (SMART GROUPING)
 # Phụ trách API: GET /api/shopping-list
-# -----------------------------------------------------------------------------
+
 
 def map_ingredient_to_aisle(food_name: str, category_name: str = "") -> Dict[str, str]:
     """Phân loại nguyên liệu vào Quầy hàng thực tế tại chợ / siêu thị."""
@@ -793,9 +786,9 @@ def get_smart_shopping_list(
     }
 
 
-# -----------------------------------------------------------------------------
+
 # 6. NGHIỆP VỤ XUẤT DÙNG, ĐIỀU CHỈNH & QUẢN LÝ KHO (AUDIT TRAIL)
-# -----------------------------------------------------------------------------
+
 
 def use_food(
     item_id: int,
@@ -1118,9 +1111,8 @@ def get_alerts(system_date: Optional[str] = None) -> Dict[str, Any]:
     }
 
 
-# -----------------------------------------------------------------------------
+
 # 8. TRUY VẤN TỦ LẠNH (INVENTORY) & AUDIT LOG
-# -----------------------------------------------------------------------------
 
 def get_inventory(
     search_text: Optional[str] = None,
